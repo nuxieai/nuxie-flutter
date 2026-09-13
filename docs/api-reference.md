@@ -43,7 +43,7 @@ Configuration contains platform public keys, environment (`production` by defaul
 | `useFeature(id, amount: 1, entityId, metadata)` | Enqueues native usage without waiting for server confirmation. |
 | `useFeatureAndWait(id, amount: 1, entityId, setUsage: false, metadata)` | Returns `FeatureUsageResult`: success, featureId, amountUsed, message, optional usage and authoritativeAccess. |
 
-The bridge accepts finite nonnegative doubles to preserve the native interface. The current backend requires positive whole units for remote checks and usage; unsupported amounts fail without rounding. A successful final-unit spend remains successful even when post-spend access is denied. Use one usage method per action; do not retry an ambiguous result by creating another command.
+The bridge accepts finite nonnegative doubles to preserve the native interface. The current backend requires positive whole units for remote checks and rejects native usage commands and entity-scoped queries altogether ([UNIV-3135](https://universe.basis.dev/issue/UNIV-3135)). These native interfaces are not production-qualified in this preview; unsupported requests fail without rounding or a synthesized success. A successful final-unit spend remains successful even when post-spend access is denied. Use one usage method per action; do not retry an ambiguous result by creating another command.
 
 `NuxieFeatureBuilder(client:, featureId:, builder:)` rebuilds from the global snapshot. Its builder receives `(context, access, state)`. It does not fetch, consume, or reinterpret access.
 

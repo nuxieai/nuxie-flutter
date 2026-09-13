@@ -148,7 +148,7 @@ if (result.success) {
 do not reject that action because the returned remaining balance is now zero.
 `authoritativeAccess`, `usage`, and `amountUsed` are preserved in the result.
 The bridge preserves native doubles, but the current backend accepts positive whole
-units for checks and usage. Use `1`, not `0.5`; unsupported amounts return a native error.
+units for remote checks. Use `1`, not `0.5`; unsupported amounts return a native error.
 
 Use `useFeature` when reporting usage without waiting for server confirmation. Call
 one of these methods per action, not both. Native code owns durable commands and retry
