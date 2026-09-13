@@ -12,6 +12,7 @@ Future<void> validateSdk(
   String? customerId,
   String? entityA,
   String? entityB,
+  String? expectedAppAction,
 }) async {
   void check(bool condition, String message) {
     if (!condition) throw StateError(message);
@@ -46,6 +47,9 @@ Future<void> validateSdk(
 
   await waitForReady();
   report("PASS: Native profile admitted");
+  await client.setLocaleIdentifier('en-GB');
+  await client.setLocaleIdentifier(null);
+  report('PASS: Locale override and clear');
   final customer =
       customerId ?? 'flutter-lab-${DateTime.now().microsecondsSinceEpoch}';
   await client.identify(customer, userProperties: {'validation': true});
@@ -55,9 +59,6 @@ Future<void> validateSdk(
   );
   await waitForReady();
   report("PASS: Identified profile is ready");
-  await client.setLocaleIdentifier('en-GB');
-  await client.setLocaleIdentifier(null);
-  report('PASS: Locale override and clear');
 
   final access = await client.hasFeature(
     featureId,
@@ -147,11 +148,21 @@ Future<void> validateSdk(
     );
     report('Usage committed=${usage.success}, amount=${usage.amountUsed}');
   }
+  final appAction = expectedAppAction == null
+      ? null
+      : client.appActions
+            .firstWhere((action) => action.name == expectedAppAction)
+            .timeout(const Duration(minutes: 2));
   await client.trigger(event, properties: {'source': 'sdk_lab_validation'});
   report(
     'PASS: Authored event invoked; inspect presentation and activity separately',
   );
-  await Future<void>.delayed(const Duration(seconds: 3));
+  if (appAction != null) {
+    await appAction;
+    report('PASS: Authored App Action delivered: $expectedAppAction');
+  } else {
+    await Future<void>.delayed(const Duration(seconds: 3));
+  }
   await client.dismiss();
   await client.reset(keepAnonymousId: true);
   check(!await client.getIsIdentified(), 'Reset clears identified state');

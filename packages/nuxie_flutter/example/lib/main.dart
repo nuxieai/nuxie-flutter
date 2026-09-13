@@ -143,6 +143,10 @@ class _SdkLabState extends State<SdkLab> {
     entityB: const String.fromEnvironment('NUXIE_ENTITY_B').isEmpty
         ? null
         : const String.fromEnvironment('NUXIE_ENTITY_B'),
+    expectedAppAction:
+        const String.fromEnvironment('NUXIE_VALIDATE_APP_ACTION').isEmpty
+        ? null
+        : const String.fromEnvironment('NUXIE_VALIDATE_APP_ACTION'),
   );
 
   Widget input(
