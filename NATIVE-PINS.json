@@ -5,10 +5,10 @@
   "pigeon": "26.3.4",
   "ios": {
     "repository": "https://github.com/nuxieai/nuxie-ios.git",
-    "revision": "a28fb01d7fc4d093353747438ab8ec60a4be9125"
+    "revision": "c2f304eb87f3efbedaa38052ca64eab53e0d0b0f"
   },
   "android": {
     "repository": "https://github.com/nuxieai/nuxie-android.git",
-    "revision": "6366cad22d334f44d5d6fdb254dda13ecc960713"
+    "revision": "1cfd174cc6a713794e93c1654e37bec853f7e38f"
   }
 }
