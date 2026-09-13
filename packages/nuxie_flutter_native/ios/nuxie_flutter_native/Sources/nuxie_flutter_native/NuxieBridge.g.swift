@@ -293,6 +293,9 @@ struct PFeatureAccess: Hashable {
 /// Generated class from Pigeon that represents data sent in messages.
 struct PFeatureConsumptionResult: Hashable {
   var operationId: String? = nil
+  var customerId: String? = nil
+  var featureId: String? = nil
+  var occurredAtMs: Double? = nil
   var accepted: Bool? = nil
   var code: String? = nil
   var quantity: Double? = nil
@@ -305,16 +308,22 @@ struct PFeatureConsumptionResult: Hashable {
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> PFeatureConsumptionResult? {
     let operationId: String? = nilOrValue(pigeonVar_list[0])
-    let accepted: Bool? = nilOrValue(pigeonVar_list[1])
-    let code: String? = nilOrValue(pigeonVar_list[2])
-    let quantity: Double? = nilOrValue(pigeonVar_list[3])
-    let balance: Double? = nilOrValue(pigeonVar_list[4])
-    let unlimited: Bool? = nilOrValue(pigeonVar_list[5])
-    let active: Bool? = nilOrValue(pigeonVar_list[6])
-    let idempotentReplay: Bool? = nilOrValue(pigeonVar_list[7])
+    let customerId: String? = nilOrValue(pigeonVar_list[1])
+    let featureId: String? = nilOrValue(pigeonVar_list[2])
+    let occurredAtMs: Double? = nilOrValue(pigeonVar_list[3])
+    let accepted: Bool? = nilOrValue(pigeonVar_list[4])
+    let code: String? = nilOrValue(pigeonVar_list[5])
+    let quantity: Double? = nilOrValue(pigeonVar_list[6])
+    let balance: Double? = nilOrValue(pigeonVar_list[7])
+    let unlimited: Bool? = nilOrValue(pigeonVar_list[8])
+    let active: Bool? = nilOrValue(pigeonVar_list[9])
+    let idempotentReplay: Bool? = nilOrValue(pigeonVar_list[10])
 
     return PFeatureConsumptionResult(
       operationId: operationId,
+      customerId: customerId,
+      featureId: featureId,
+      occurredAtMs: occurredAtMs,
       accepted: accepted,
       code: code,
       quantity: quantity,
@@ -327,6 +336,9 @@ struct PFeatureConsumptionResult: Hashable {
   func toList() -> [Any?] {
     return [
       operationId,
+      customerId,
+      featureId,
+      occurredAtMs,
       accepted,
       code,
       quantity,
@@ -340,12 +352,15 @@ struct PFeatureConsumptionResult: Hashable {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return deepEqualsNuxieBridge(lhs.operationId, rhs.operationId) && deepEqualsNuxieBridge(lhs.accepted, rhs.accepted) && deepEqualsNuxieBridge(lhs.code, rhs.code) && deepEqualsNuxieBridge(lhs.quantity, rhs.quantity) && deepEqualsNuxieBridge(lhs.balance, rhs.balance) && deepEqualsNuxieBridge(lhs.unlimited, rhs.unlimited) && deepEqualsNuxieBridge(lhs.active, rhs.active) && deepEqualsNuxieBridge(lhs.idempotentReplay, rhs.idempotentReplay)
+    return deepEqualsNuxieBridge(lhs.operationId, rhs.operationId) && deepEqualsNuxieBridge(lhs.customerId, rhs.customerId) && deepEqualsNuxieBridge(lhs.featureId, rhs.featureId) && deepEqualsNuxieBridge(lhs.occurredAtMs, rhs.occurredAtMs) && deepEqualsNuxieBridge(lhs.accepted, rhs.accepted) && deepEqualsNuxieBridge(lhs.code, rhs.code) && deepEqualsNuxieBridge(lhs.quantity, rhs.quantity) && deepEqualsNuxieBridge(lhs.balance, rhs.balance) && deepEqualsNuxieBridge(lhs.unlimited, rhs.unlimited) && deepEqualsNuxieBridge(lhs.active, rhs.active) && deepEqualsNuxieBridge(lhs.idempotentReplay, rhs.idempotentReplay)
   }
 
   func hash(into hasher: inout Hasher) {
     hasher.combine("PFeatureConsumptionResult")
     deepHashNuxieBridge(value: operationId, hasher: &hasher)
+    deepHashNuxieBridge(value: customerId, hasher: &hasher)
+    deepHashNuxieBridge(value: featureId, hasher: &hasher)
+    deepHashNuxieBridge(value: occurredAtMs, hasher: &hasher)
     deepHashNuxieBridge(value: accepted, hasher: &hasher)
     deepHashNuxieBridge(value: code, hasher: &hasher)
     deepHashNuxieBridge(value: quantity, hasher: &hasher)

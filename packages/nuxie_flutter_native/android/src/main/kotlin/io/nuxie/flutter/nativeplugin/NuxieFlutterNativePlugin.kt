@@ -252,7 +252,8 @@ class NuxieFlutterNativePlugin : FlutterPlugin, ActivityAware, PNuxieHostApi {
     scope.launch {
       runCatching {
         val result = Nuxie.consumeFeature(featureId, quantity, operationId, entityId)
-        PFeatureConsumptionResult(operationId = result.operationId, accepted = result.accepted, code = result.code,
+        PFeatureConsumptionResult(operationId = result.operationId,
+          customerId = result.customerId, featureId = result.featureId, occurredAtMs = result.occurredAtMs, accepted = result.accepted, code = result.code,
           quantity = result.quantity, balance = result.balance, unlimited = result.unlimited,
           active = result.active, idempotentReplay = result.idempotentReplay)
       }.onSuccess { callback(Result.success(it)) }.onFailure { callback(Result.failure(it)) }

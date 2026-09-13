@@ -240,6 +240,9 @@ class PFeatureAccess {
 class PFeatureConsumptionResult {
   PFeatureConsumptionResult({
     this.operationId,
+    this.customerId,
+    this.featureId,
+    this.occurredAtMs,
     this.accepted,
     this.code,
     this.quantity,
@@ -250,6 +253,12 @@ class PFeatureConsumptionResult {
   });
 
   String? operationId;
+
+  String? customerId;
+
+  String? featureId;
+
+  double? occurredAtMs;
 
   bool? accepted;
 
@@ -268,6 +277,9 @@ class PFeatureConsumptionResult {
   List<Object?> _toList() {
     return <Object?>[
       operationId,
+      customerId,
+      featureId,
+      occurredAtMs,
       accepted,
       code,
       quantity,
@@ -285,13 +297,16 @@ class PFeatureConsumptionResult {
     result as List<Object?>;
     return PFeatureConsumptionResult(
       operationId: result[0] as String?,
-      accepted: result[1] as bool?,
-      code: result[2] as String?,
-      quantity: result[3] as double?,
-      balance: result[4] as double?,
-      unlimited: result[5] as bool?,
-      active: result[6] as bool?,
-      idempotentReplay: result[7] as bool?,
+      customerId: result[1] as String?,
+      featureId: result[2] as String?,
+      occurredAtMs: result[3] as double?,
+      accepted: result[4] as bool?,
+      code: result[5] as String?,
+      quantity: result[6] as double?,
+      balance: result[7] as double?,
+      unlimited: result[8] as bool?,
+      active: result[9] as bool?,
+      idempotentReplay: result[10] as bool?,
     );
   }
 
@@ -304,7 +319,7 @@ class PFeatureConsumptionResult {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(operationId, other.operationId) && _deepEquals(accepted, other.accepted) && _deepEquals(code, other.code) && _deepEquals(quantity, other.quantity) && _deepEquals(balance, other.balance) && _deepEquals(unlimited, other.unlimited) && _deepEquals(active, other.active) && _deepEquals(idempotentReplay, other.idempotentReplay);
+    return _deepEquals(operationId, other.operationId) && _deepEquals(customerId, other.customerId) && _deepEquals(featureId, other.featureId) && _deepEquals(occurredAtMs, other.occurredAtMs) && _deepEquals(accepted, other.accepted) && _deepEquals(code, other.code) && _deepEquals(quantity, other.quantity) && _deepEquals(balance, other.balance) && _deepEquals(unlimited, other.unlimited) && _deepEquals(active, other.active) && _deepEquals(idempotentReplay, other.idempotentReplay);
   }
 
   @override

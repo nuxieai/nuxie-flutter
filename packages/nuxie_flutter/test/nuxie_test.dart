@@ -143,6 +143,9 @@ class FakePlatform extends NuxieFlutterPlatform {
     commands.add('$featureId/$quantity/$operationId/$entityId');
     return FeatureConsumptionResult(
       operationId: operationId,
+      customerId: 'customer',
+      featureId: featureId,
+      occurredAtMs: 1000,
       accepted: true,
       code: 'consumed',
       quantity: quantity,
@@ -285,6 +288,9 @@ void main() {
       expect(first.active, false);
       expect(first.balance, 0);
       expect(replay.idempotentReplay, true);
+      expect(replay.customerId, 'customer');
+      expect(replay.featureId, 'credits');
+      expect(replay.occurredAtMs, 1000);
       expect(platform.commands, [
         'credits/1.0/export-1/a',
         'credits/1.0/export-1/a',

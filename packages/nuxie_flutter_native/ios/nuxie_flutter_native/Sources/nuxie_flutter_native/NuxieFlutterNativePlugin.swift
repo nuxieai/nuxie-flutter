@@ -264,7 +264,8 @@ public final class NuxieFlutterNativePlugin: NSObject, FlutterPlugin, PNuxieHost
       do {
         let result = try await NuxieSDK.shared.consumeFeature(featureId, quantity: quantity,
           operationId: operationId, entityId: entityId)
-        completion(.success(PFeatureConsumptionResult(operationId: result.operationId, accepted: result.accepted,
+        completion(.success(PFeatureConsumptionResult(operationId: result.operationId,
+          customerId: result.customerId, featureId: result.featureId, occurredAtMs: result.occurredAtMs, accepted: result.accepted,
           code: result.code, quantity: result.quantity, balance: result.balance, unlimited: result.unlimited,
           active: result.active, idempotentReplay: result.idempotentReplay)))
       } catch { completion(.failure(error)) }
