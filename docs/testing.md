@@ -59,3 +59,14 @@ set this override and remains strict. A scoped run is not full usage qualificati
 Local authority routing also needed a temporary Miniflare version/registry alignment,
 tracked in [UNIV-3134](https://universe.basis.dev/issue/UNIV-3134). No workaround is
 part of the Flutter production API.
+
+Attended evidence: iPhone 17 Pro / iOS 26.5 simulator and Android API 36 emulator
+both completed the explicitly scoped Lab procedure: contract negotiation, native
+version, anonymous identity, ready profile, identify, locale override/reset, remote
+Exports Feature denial, authored event invocation, identity reset, shutdown, and
+reconfiguration. Both rendered the published Experience. Screenshots are checked in
+under `screenshots/`. iOS also completed the Experience through its Continue action.
+
+These runs did not qualify an allowed grant, metered consumption, App Action routing,
+or real StoreKit / Play purchase and restore outcomes. The test customer had no grants.
+The strict integration test remains a release requirement after the backend fix.

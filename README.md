@@ -243,6 +243,13 @@ flutter run -d <device-id> \
   --dart-define=NUXIE_FEATURE=exports
 ```
 
+The same published Experience, presented natively from the Lab on iOS and Android:
+
+<p>
+  <img src="docs/screenshots/ios-experience.png" width="220" alt="Published Experience running in the iOS Flutter example" />
+  <img src="docs/screenshots/android-experience.png" width="220" alt="Published Experience running in the Android Flutter example" />
+</p>
+
 You can also enter public keys and event/Feature names in the app. The Lab selects the
 development environment. That environment normally uses Nuxie's hosted development
 ingest; an attended local-backend validation uses native test-host configuration,
