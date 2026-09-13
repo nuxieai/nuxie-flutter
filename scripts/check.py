@@ -33,9 +33,10 @@ run(['git', 'diff', '--exit-code', '--',
 example = root / 'packages/nuxie_flutter/example'
 if sys.platform != 'darwin':
     raise SystemExit('Full Flutter readiness requires macOS for the iOS simulator build.')
-run(['flutter', 'build', 'ios', '--simulator', '--debug'], example)
+env = dict(os.environ)
+for key in ['NUXIE_IOS_SDK_PATH', 'NUXIE_RUNTIME_USE_LOCAL', 'NUXIE_ANDROID_SDK_PATH']:
+    env.pop(key, None)
+run(['flutter', 'build', 'ios', '--simulator', '--debug'], example, env)
 # Direct Gradle avoids Flutter CLI discovery of an unrelated Android Studio JDK.
 # The Flutter Gradle plugin still compiles and bundles the actual Dart app.
-env = dict(os.environ)
-env.pop('NUXIE_ANDROID_SDK_PATH', None)
 run(['./gradlew', ':app:assembleDebug'], example / 'android', env)
