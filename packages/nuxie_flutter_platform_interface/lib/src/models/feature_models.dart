@@ -92,3 +92,25 @@ final class NativeFeatureSnapshot {
   final int revision;
   final NuxieFeatureSnapshot value;
 }
+
+/// A committed decision; accepted remains true when the final unit was spent.
+class FeatureConsumptionResult {
+  const FeatureConsumptionResult({
+    required this.operationId,
+    required this.accepted,
+    required this.code,
+    required this.quantity,
+    this.balance,
+    required this.unlimited,
+    required this.active,
+    required this.idempotentReplay,
+  });
+  final String operationId;
+  final bool accepted;
+  final String code;
+  final double quantity;
+  final double? balance;
+  final bool unlimited;
+  final bool active;
+  final bool idempotentReplay;
+}

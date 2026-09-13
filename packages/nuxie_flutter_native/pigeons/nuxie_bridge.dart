@@ -31,6 +31,17 @@ class PFeatureAccess {
   String? type;
 }
 
+class PFeatureConsumptionResult {
+  String? operationId;
+  bool? accepted;
+  String? code;
+  double? quantity;
+  double? balance;
+  bool? unlimited;
+  bool? active;
+  bool? idempotentReplay;
+}
+
 class PFeatureUsageResult {
   bool? success;
   String? featureId;
@@ -157,6 +168,14 @@ abstract class PNuxieHostApi {
     double requiredBalance,
     String? entityId,
     String policy,
+  );
+
+  @async
+  PFeatureConsumptionResult consumeFeature(
+    String featureId,
+    double quantity,
+    String operationId,
+    String? entityId,
   );
 
   void useFeature(

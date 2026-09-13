@@ -30,6 +30,13 @@ abstract interface class NuxieClient {
     String? entityId,
     FeatureCheckPolicy policy = FeatureCheckPolicy.cacheFirst,
   });
+  Future<FeatureConsumptionResult> consumeFeature(
+    String featureId, {
+    double quantity = 1,
+    required String operationId,
+    String? entityId,
+  });
+
   Future<void> useFeature(
     String featureId, {
     double amount = 1,
@@ -343,7 +350,7 @@ final class Nuxie implements NuxieClient {
   }) => _call(
     (p) => p.useFeature(
       _name(featureId),
-      amount: _amount(amount),
+      amount: _quantity(amount),
       entityId: entityId,
       metadata: _json(metadata),
     ),
@@ -358,12 +365,27 @@ final class Nuxie implements NuxieClient {
   }) => _call(
     (p) => p.useFeatureAndWait(
       _name(featureId),
-      amount: _amount(amount),
+      amount: _quantity(amount),
       entityId: entityId,
       setUsage: setUsage,
       metadata: _json(metadata),
     ),
   );
+  @override
+  Future<FeatureConsumptionResult> consumeFeature(
+    String featureId, {
+    double quantity = 1,
+    required String operationId,
+    String? entityId,
+  }) => _call(
+    (p) => p.consumeFeature(
+      _name(featureId),
+      quantity: _quantity(quantity),
+      operationId: _name(operationId),
+      entityId: entityId,
+    ),
+  );
+
   @override
   Future<RestoreResult> restorePurchases() =>
       _call((p) => p.restorePurchases());
@@ -444,4 +466,18 @@ Map<String, Object?>? _json(Map<String, Object?>? input) {
   return input == null
       ? null
       : copy(input, r'$', Set.identity()) as Map<String, Object?>;
+}
+
+double _quantity(double value) {
+  if (!value.isFinite ||
+      value <= 0 ||
+      value > 9007199254740991 ||
+      value.truncateToDouble() != value) {
+    throw ArgumentError.value(
+      value,
+      'quantity',
+      'Must be a positive exact integer',
+    );
+  }
+  return value;
 }

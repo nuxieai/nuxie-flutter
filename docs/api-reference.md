@@ -43,7 +43,11 @@ Configuration contains platform public keys, environment (`production` by defaul
 | `useFeature(id, amount: 1, entityId, metadata)` | Enqueues native usage without waiting for server confirmation. |
 | `useFeatureAndWait(id, amount: 1, entityId, setUsage: false, metadata)` | Returns `FeatureUsageResult`: success, featureId, amountUsed, message, optional usage and authoritativeAccess. |
 
-The bridge accepts finite nonnegative doubles to preserve the native interface. The current backend requires positive whole units for remote checks and rejects native usage commands and entity-scoped queries altogether ([UNIV-3135](https://universe.basis.dev/issue/UNIV-3135)). These native interfaces are not production-qualified in this preview; unsupported requests fail without rounding or a synthesized success. A successful final-unit spend remains successful even when post-spend access is denied. Use one usage method per action; do not retry an ambiguous result by creating another command.
+Usage commands require positive whole units up to `Number.MAX_SAFE_INTEGER` (9,007,199,254,740,991). Invalid quantities fail before delivery. Entity IDs select explicitly assigned grants; unknown entities deny access and cannot spend aggregate grants. Unscoped checks retain the customer aggregate. A successful final-unit spend remains successful even when post-spend access is inactive.
+
+`consumeFeature(featureId, quantity: 1, operationId: 'stable-action-id', entityId: 'project-a')` returns `FeatureConsumptionResult`: `operationId`, `accepted`, `code`, `quantity`, `balance`, `unlimited`, `active`, and `idempotentReplay`. Persist the operation ID with the action and reuse it for a retry. Changing the command while reusing its ID is an error.
+
+`setUsage: true` reports a cumulative total. Reporting 20 then 25 charges 20 then 5; reporting 10 afterward restores no credits. Credit restoration requires an explicit server adjustment. Native journals persist pending commands across restarts and retry their original IDs. Use one usage method per action; do not replace an ambiguous command with a new ID.
 
 `NuxieFeatureBuilder(client:, featureId:, builder:)` rebuilds from the global snapshot. Its builder receives `(context, access, state)`. It does not fetch, consume, or reinterpret access.
 

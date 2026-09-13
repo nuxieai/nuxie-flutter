@@ -247,6 +247,18 @@ class NuxieFlutterNativePlugin : FlutterPlugin, ActivityAware, PNuxieHostApi {
     }
   }
 
+  override fun consumeFeature(featureId: String, quantity: Double, operationId: String, entityId: String?,
+    callback: (Result<PFeatureConsumptionResult>) -> Unit) {
+    scope.launch {
+      runCatching {
+        val result = Nuxie.consumeFeature(featureId, quantity, operationId, entityId)
+        PFeatureConsumptionResult(operationId = result.operationId, accepted = result.accepted, code = result.code,
+          quantity = result.quantity, balance = result.balance, unlimited = result.unlimited,
+          active = result.active, idempotentReplay = result.idempotentReplay)
+      }.onSuccess { callback(Result.success(it)) }.onFailure { callback(Result.failure(it)) }
+    }
+  }
+
   override fun useFeature(
     featureId: String,
     amount: Double,

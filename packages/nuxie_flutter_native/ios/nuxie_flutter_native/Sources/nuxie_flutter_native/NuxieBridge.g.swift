@@ -291,6 +291,72 @@ struct PFeatureAccess: Hashable {
 }
 
 /// Generated class from Pigeon that represents data sent in messages.
+struct PFeatureConsumptionResult: Hashable {
+  var operationId: String? = nil
+  var accepted: Bool? = nil
+  var code: String? = nil
+  var quantity: Double? = nil
+  var balance: Double? = nil
+  var unlimited: Bool? = nil
+  var active: Bool? = nil
+  var idempotentReplay: Bool? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> PFeatureConsumptionResult? {
+    let operationId: String? = nilOrValue(pigeonVar_list[0])
+    let accepted: Bool? = nilOrValue(pigeonVar_list[1])
+    let code: String? = nilOrValue(pigeonVar_list[2])
+    let quantity: Double? = nilOrValue(pigeonVar_list[3])
+    let balance: Double? = nilOrValue(pigeonVar_list[4])
+    let unlimited: Bool? = nilOrValue(pigeonVar_list[5])
+    let active: Bool? = nilOrValue(pigeonVar_list[6])
+    let idempotentReplay: Bool? = nilOrValue(pigeonVar_list[7])
+
+    return PFeatureConsumptionResult(
+      operationId: operationId,
+      accepted: accepted,
+      code: code,
+      quantity: quantity,
+      balance: balance,
+      unlimited: unlimited,
+      active: active,
+      idempotentReplay: idempotentReplay
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      operationId,
+      accepted,
+      code,
+      quantity,
+      balance,
+      unlimited,
+      active,
+      idempotentReplay,
+    ]
+  }
+  static func == (lhs: PFeatureConsumptionResult, rhs: PFeatureConsumptionResult) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsNuxieBridge(lhs.operationId, rhs.operationId) && deepEqualsNuxieBridge(lhs.accepted, rhs.accepted) && deepEqualsNuxieBridge(lhs.code, rhs.code) && deepEqualsNuxieBridge(lhs.quantity, rhs.quantity) && deepEqualsNuxieBridge(lhs.balance, rhs.balance) && deepEqualsNuxieBridge(lhs.unlimited, rhs.unlimited) && deepEqualsNuxieBridge(lhs.active, rhs.active) && deepEqualsNuxieBridge(lhs.idempotentReplay, rhs.idempotentReplay)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("PFeatureConsumptionResult")
+    deepHashNuxieBridge(value: operationId, hasher: &hasher)
+    deepHashNuxieBridge(value: accepted, hasher: &hasher)
+    deepHashNuxieBridge(value: code, hasher: &hasher)
+    deepHashNuxieBridge(value: quantity, hasher: &hasher)
+    deepHashNuxieBridge(value: balance, hasher: &hasher)
+    deepHashNuxieBridge(value: unlimited, hasher: &hasher)
+    deepHashNuxieBridge(value: active, hasher: &hasher)
+    deepHashNuxieBridge(value: idempotentReplay, hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
 struct PFeatureUsageResult: Hashable {
   var success: Bool? = nil
   var featureId: String? = nil
@@ -874,26 +940,28 @@ private class NuxieBridgePigeonCodecReader: FlutterStandardReader {
     case 130:
       return PFeatureAccess.fromList(self.readValue() as! [Any?])
     case 131:
-      return PFeatureUsageResult.fromList(self.readValue() as! [Any?])
+      return PFeatureConsumptionResult.fromList(self.readValue() as! [Any?])
     case 132:
-      return PFeatureSnapshot.fromList(self.readValue() as! [Any?])
+      return PFeatureUsageResult.fromList(self.readValue() as! [Any?])
     case 133:
-      return PVersions.fromList(self.readValue() as! [Any?])
+      return PFeatureSnapshot.fromList(self.readValue() as! [Any?])
     case 134:
-      return PExperienceRef.fromList(self.readValue() as! [Any?])
+      return PVersions.fromList(self.readValue() as! [Any?])
     case 135:
-      return PAppAction.fromList(self.readValue() as! [Any?])
+      return PExperienceRef.fromList(self.readValue() as! [Any?])
     case 136:
-      return PActivityInfo.fromList(self.readValue() as! [Any?])
+      return PAppAction.fromList(self.readValue() as! [Any?])
     case 137:
-      return PPurchaseRequest.fromList(self.readValue() as! [Any?])
+      return PActivityInfo.fromList(self.readValue() as! [Any?])
     case 138:
-      return PRestoreRequest.fromList(self.readValue() as! [Any?])
+      return PPurchaseRequest.fromList(self.readValue() as! [Any?])
     case 139:
-      return PPurchaseResult.fromList(self.readValue() as! [Any?])
+      return PRestoreRequest.fromList(self.readValue() as! [Any?])
     case 140:
-      return PRestoreResult.fromList(self.readValue() as! [Any?])
+      return PPurchaseResult.fromList(self.readValue() as! [Any?])
     case 141:
+      return PRestoreResult.fromList(self.readValue() as! [Any?])
+    case 142:
       return PIntroductoryTerms.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
@@ -909,38 +977,41 @@ private class NuxieBridgePigeonCodecWriter: FlutterStandardWriter {
     } else if let value = value as? PFeatureAccess {
       super.writeByte(130)
       super.writeValue(value.toList())
-    } else if let value = value as? PFeatureUsageResult {
+    } else if let value = value as? PFeatureConsumptionResult {
       super.writeByte(131)
       super.writeValue(value.toList())
-    } else if let value = value as? PFeatureSnapshot {
+    } else if let value = value as? PFeatureUsageResult {
       super.writeByte(132)
       super.writeValue(value.toList())
-    } else if let value = value as? PVersions {
+    } else if let value = value as? PFeatureSnapshot {
       super.writeByte(133)
       super.writeValue(value.toList())
-    } else if let value = value as? PExperienceRef {
+    } else if let value = value as? PVersions {
       super.writeByte(134)
       super.writeValue(value.toList())
-    } else if let value = value as? PAppAction {
+    } else if let value = value as? PExperienceRef {
       super.writeByte(135)
       super.writeValue(value.toList())
-    } else if let value = value as? PActivityInfo {
+    } else if let value = value as? PAppAction {
       super.writeByte(136)
       super.writeValue(value.toList())
-    } else if let value = value as? PPurchaseRequest {
+    } else if let value = value as? PActivityInfo {
       super.writeByte(137)
       super.writeValue(value.toList())
-    } else if let value = value as? PRestoreRequest {
+    } else if let value = value as? PPurchaseRequest {
       super.writeByte(138)
       super.writeValue(value.toList())
-    } else if let value = value as? PPurchaseResult {
+    } else if let value = value as? PRestoreRequest {
       super.writeByte(139)
       super.writeValue(value.toList())
-    } else if let value = value as? PRestoreResult {
+    } else if let value = value as? PPurchaseResult {
       super.writeByte(140)
       super.writeValue(value.toList())
-    } else if let value = value as? PIntroductoryTerms {
+    } else if let value = value as? PRestoreResult {
       super.writeByte(141)
+      super.writeValue(value.toList())
+    } else if let value = value as? PIntroductoryTerms {
+      super.writeByte(142)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -977,6 +1048,7 @@ protocol PNuxieHostApi {
   func dismiss(completion: @escaping (Result<Void, Error>) -> Void)
   func setLocaleIdentifier(localeIdentifier: String?, completion: @escaping (Result<Void, Error>) -> Void)
   func hasFeature(featureId: String, requiredBalance: Double, entityId: String?, policy: String, completion: @escaping (Result<PFeatureAccess, Error>) -> Void)
+  func consumeFeature(featureId: String, quantity: Double, operationId: String, entityId: String?, completion: @escaping (Result<PFeatureConsumptionResult, Error>) -> Void)
   func useFeature(featureId: String, amount: Double, entityId: String?, metadata: [String?: Any?]?) throws
   func useFeatureAndWait(featureId: String, amount: Double, entityId: String?, setUsage: Bool, metadata: [String?: Any?]?, completion: @escaping (Result<PFeatureUsageResult, Error>) -> Void)
   func completePurchase(requestId: String, result: PPurchaseResult) throws
@@ -1184,6 +1256,26 @@ class PNuxieHostApiSetup {
       }
     } else {
       hasFeatureChannel.setMessageHandler(nil)
+    }
+    let consumeFeatureChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.consumeFeature\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      consumeFeatureChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let featureIdArg = args[0] as! String
+        let quantityArg = args[1] as! Double
+        let operationIdArg = args[2] as! String
+        let entityIdArg: String? = nilOrValue(args[3])
+        api.consumeFeature(featureId: featureIdArg, quantity: quantityArg, operationId: operationIdArg, entityId: entityIdArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      consumeFeatureChannel.setMessageHandler(nil)
     }
     let useFeatureChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.useFeature\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {

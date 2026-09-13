@@ -40,6 +40,19 @@ FeatureAccess fromFeatureAccess(PFeatureAccess value) {
   );
 }
 
+FeatureConsumptionResult fromFeatureConsumptionResult(
+  PFeatureConsumptionResult value,
+) => FeatureConsumptionResult(
+  operationId: requiredField(value.operationId, 'operationId'),
+  accepted: requiredField(value.accepted, 'accepted'),
+  code: requiredField(value.code, 'code'),
+  quantity: requiredField(value.quantity, 'quantity'),
+  balance: value.balance,
+  unlimited: requiredField(value.unlimited, 'unlimited'),
+  active: requiredField(value.active, 'active'),
+  idempotentReplay: requiredField(value.idempotentReplay, 'idempotentReplay'),
+);
+
 FeatureUsageResult fromFeatureUsageResult(PFeatureUsageResult value) {
   final usage = value.usageCurrent == null
       ? null

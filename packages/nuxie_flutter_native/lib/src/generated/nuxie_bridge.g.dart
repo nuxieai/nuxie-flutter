@@ -237,6 +237,81 @@ class PFeatureAccess {
   int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
 }
 
+class PFeatureConsumptionResult {
+  PFeatureConsumptionResult({
+    this.operationId,
+    this.accepted,
+    this.code,
+    this.quantity,
+    this.balance,
+    this.unlimited,
+    this.active,
+    this.idempotentReplay,
+  });
+
+  String? operationId;
+
+  bool? accepted;
+
+  String? code;
+
+  double? quantity;
+
+  double? balance;
+
+  bool? unlimited;
+
+  bool? active;
+
+  bool? idempotentReplay;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      operationId,
+      accepted,
+      code,
+      quantity,
+      balance,
+      unlimited,
+      active,
+      idempotentReplay,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static PFeatureConsumptionResult decode(Object result) {
+    result as List<Object?>;
+    return PFeatureConsumptionResult(
+      operationId: result[0] as String?,
+      accepted: result[1] as bool?,
+      code: result[2] as String?,
+      quantity: result[3] as double?,
+      balance: result[4] as double?,
+      unlimited: result[5] as bool?,
+      active: result[6] as bool?,
+      idempotentReplay: result[7] as bool?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! PFeatureConsumptionResult || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(operationId, other.operationId) && _deepEquals(accepted, other.accepted) && _deepEquals(code, other.code) && _deepEquals(quantity, other.quantity) && _deepEquals(balance, other.balance) && _deepEquals(unlimited, other.unlimited) && _deepEquals(active, other.active) && _deepEquals(idempotentReplay, other.idempotentReplay);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+}
+
 class PFeatureUsageResult {
   PFeatureUsageResult({
     this.success,
@@ -926,38 +1001,41 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is PFeatureAccess) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    }    else if (value is PFeatureUsageResult) {
+    }    else if (value is PFeatureConsumptionResult) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
-    }    else if (value is PFeatureSnapshot) {
+    }    else if (value is PFeatureUsageResult) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
-    }    else if (value is PVersions) {
+    }    else if (value is PFeatureSnapshot) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    }    else if (value is PExperienceRef) {
+    }    else if (value is PVersions) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
-    }    else if (value is PAppAction) {
+    }    else if (value is PExperienceRef) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
-    }    else if (value is PActivityInfo) {
+    }    else if (value is PAppAction) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
-    }    else if (value is PPurchaseRequest) {
+    }    else if (value is PActivityInfo) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    }    else if (value is PRestoreRequest) {
+    }    else if (value is PPurchaseRequest) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    }    else if (value is PPurchaseResult) {
+    }    else if (value is PRestoreRequest) {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
-    }    else if (value is PRestoreResult) {
+    }    else if (value is PPurchaseResult) {
       buffer.putUint8(140);
       writeValue(buffer, value.encode());
-    }    else if (value is PIntroductoryTerms) {
+    }    else if (value is PRestoreResult) {
       buffer.putUint8(141);
+      writeValue(buffer, value.encode());
+    }    else if (value is PIntroductoryTerms) {
+      buffer.putUint8(142);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -972,26 +1050,28 @@ class _PigeonCodec extends StandardMessageCodec {
       case 130:
         return PFeatureAccess.decode(readValue(buffer)!);
       case 131:
-        return PFeatureUsageResult.decode(readValue(buffer)!);
+        return PFeatureConsumptionResult.decode(readValue(buffer)!);
       case 132:
-        return PFeatureSnapshot.decode(readValue(buffer)!);
+        return PFeatureUsageResult.decode(readValue(buffer)!);
       case 133:
-        return PVersions.decode(readValue(buffer)!);
+        return PFeatureSnapshot.decode(readValue(buffer)!);
       case 134:
-        return PExperienceRef.decode(readValue(buffer)!);
+        return PVersions.decode(readValue(buffer)!);
       case 135:
-        return PAppAction.decode(readValue(buffer)!);
+        return PExperienceRef.decode(readValue(buffer)!);
       case 136:
-        return PActivityInfo.decode(readValue(buffer)!);
+        return PAppAction.decode(readValue(buffer)!);
       case 137:
-        return PPurchaseRequest.decode(readValue(buffer)!);
+        return PActivityInfo.decode(readValue(buffer)!);
       case 138:
-        return PRestoreRequest.decode(readValue(buffer)!);
+        return PPurchaseRequest.decode(readValue(buffer)!);
       case 139:
-        return PPurchaseResult.decode(readValue(buffer)!);
+        return PRestoreRequest.decode(readValue(buffer)!);
       case 140:
-        return PRestoreResult.decode(readValue(buffer)!);
+        return PPurchaseResult.decode(readValue(buffer)!);
       case 141:
+        return PRestoreResult.decode(readValue(buffer)!);
+      case 142:
         return PIntroductoryTerms.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -1232,6 +1312,25 @@ class PNuxieHostApi {
     )
     ;
     return pigeonVar_replyValue! as PFeatureAccess;
+  }
+
+  Future<PFeatureConsumptionResult> consumeFeature(String featureId, double quantity, String operationId, String? entityId) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.consumeFeature$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[featureId, quantity, operationId, entityId]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return pigeonVar_replyValue! as PFeatureConsumptionResult;
   }
 
   Future<void> useFeature(String featureId, double amount, String? entityId, Map<String?, Object?>? metadata) async {
