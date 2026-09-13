@@ -47,3 +47,15 @@ dart run pigeon --input pigeons/nuxie_bridge.dart
 ```
 
 Commit Dart, Swift, and Kotlin outputs together. Do not hand-edit generated files. Check `git diff --check` before submitting changes.
+
+## Attended local validation (September 2026)
+
+The current local backend rejects the native usage command and entity-scoped
+queries ([UNIV-3135](https://universe.basis.dev/issue/UNIV-3135)). The Lab supports
+`--dart-define=NUXIE_VALIDATE_USAGE=false` for explicitly scoped local runs; it prints
+`SKIP` and labels completion with “usage skipped”. The integration test does not
+set this override and remains strict. A scoped run is not full usage qualification.
+
+Local authority routing also needed a temporary Miniflare version/registry alignment,
+tracked in [UNIV-3134](https://universe.basis.dev/issue/UNIV-3134). No workaround is
+part of the Flutter production API.

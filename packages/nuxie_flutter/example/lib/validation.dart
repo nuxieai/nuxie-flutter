@@ -9,6 +9,7 @@ Future<void> validateSdk(
   void Function(String) report, {
   required String event,
   required String featureId,
+  bool validateUsage = true,
 }) async {
   void check(bool condition, String message) {
     if (!condition) throw StateError(message);
@@ -59,18 +60,22 @@ Future<void> validateSdk(
   report(
     'PASS: Remote Feature query returned ${access.allowed}, balance ${access.balance}',
   );
-  final usage = await client.useFeatureAndWait(
-    featureId,
-    amount: 1,
-    metadata: {'source': 'flutter_sdk_lab_validation'},
-  );
-  check(
-    usage.featureId == featureId,
-    'Usage result preserves Feature identity',
-  );
-  report('Usage committed=${usage.success}, amount=${usage.amountUsed}');
-  // A rejected command is a valid outcome for a development customer without grants.
-  // Do not issue a second command to retry this usage.
+  if (validateUsage) {
+    final usage = await client.useFeatureAndWait(
+      featureId,
+      amount: 1,
+      metadata: {'source': 'flutter_sdk_lab_validation'},
+    );
+    check(
+      usage.featureId == featureId,
+      'Usage result preserves Feature identity',
+    );
+    report('Usage committed=${usage.success}, amount=${usage.amountUsed}');
+    // A rejected command is a valid outcome for a development customer without grants.
+    // Do not issue a second command to retry this usage.
+  } else {
+    report('SKIP: Metered usage unavailable on this backend');
+  }
   await client.trigger(event, properties: {'source': 'sdk_lab_validation'});
   report(
     'PASS: Authored event invoked; inspect presentation and activity separately',
@@ -90,5 +95,9 @@ Future<void> validateSdk(
   );
   await client.configure(configuration);
   check(client.isConfigured, 'Reconfiguration after shutdown succeeds');
-  report('VALIDATION COMPLETE');
+  report(
+    validateUsage
+        ? 'VALIDATION COMPLETE'
+        : 'VALIDATION COMPLETE — usage skipped',
+  );
 }

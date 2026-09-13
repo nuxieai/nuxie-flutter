@@ -134,6 +134,10 @@ class _SdkLabState extends State<SdkLab> {
     record,
     event: event.text.trim(),
     featureId: feature.text.trim(),
+    validateUsage: const bool.fromEnvironment(
+      'NUXIE_VALIDATE_USAGE',
+      defaultValue: true,
+    ),
   );
 
   Widget input(
@@ -270,7 +274,7 @@ class _SdkLabState extends State<SdkLab> {
                     children: [
                       Text('Native state: ${snapshot.state.name}'),
                       if (snapshot.all.isEmpty)
-                        const Text('No Feature values admitted yet.'),
+                        const Text('No Features in the current snapshot.'),
                       for (final entry in snapshot.all.entries)
                         Text(
                           '${entry.key}: ${entry.value.allowed ? 'allowed' : 'denied'} · ${entry.value.unlimited ? 'unlimited' : entry.value.balance ?? 'no balance'}',
@@ -321,7 +325,7 @@ class _SdkLabState extends State<SdkLab> {
               ],
             ),
             const Text(
-              'Usage buttons consume development Feature balance. A timeout does not cancel a native command; do not repeat an ambiguous command.',
+              'The current backend rejects metered usage and entity-scoped checks (UNIV-3135). These controls show native results and errors. Never repeat an ambiguous usage command.',
             ),
           ],
           if (page == 2) ...[
