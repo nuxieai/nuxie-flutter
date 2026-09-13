@@ -9,7 +9,9 @@ Future<void> validateSdk(
   void Function(String) report, {
   required String event,
   required String featureId,
-  bool validateUsage = true,
+  String? customerId,
+  String? entityA,
+  String? entityB,
 }) async {
   void check(bool condition, String message) {
     if (!condition) throw StateError(message);
@@ -42,7 +44,8 @@ Future<void> validateSdk(
   } finally {
     client.features.removeListener(changed);
   }
-  final customer = 'flutter-lab-${DateTime.now().microsecondsSinceEpoch}';
+  final customer =
+      customerId ?? 'flutter-lab-${DateTime.now().microsecondsSinceEpoch}';
   await client.identify(customer, userProperties: {'validation': true});
   check(
     await client.getDistinctId() == customer && await client.getIsIdentified(),
@@ -60,7 +63,83 @@ Future<void> validateSdk(
   report(
     'PASS: Remote Feature query returned ${access.allowed}, balance ${access.balance}',
   );
-  if (validateUsage) {
+  if (entityA != null && entityB != null) {
+    final a = await client.hasFeature(
+      featureId,
+      entityId: entityA,
+      policy: FeatureCheckPolicy.remote,
+    );
+    final b = await client.hasFeature(
+      featureId,
+      entityId: entityB,
+      policy: FeatureCheckPolicy.remote,
+    );
+    check(
+      a.allowed && a.balance == 100 && b.balance == 100,
+      'Both assigned entities have 100 credits',
+    );
+    final operationId =
+        'flutter-final-${DateTime.now().microsecondsSinceEpoch}';
+    final finalUnit = await client.consumeFeature(
+      featureId,
+      quantity: 100,
+      operationId: operationId,
+      entityId: entityA,
+    );
+    check(
+      finalUnit.accepted && !finalUnit.active && finalUnit.balance == 0,
+      'Final credit consumption accepted with zero remaining',
+    );
+    final replay = await client.consumeFeature(
+      featureId,
+      quantity: 100,
+      operationId: operationId,
+      entityId: entityA,
+    );
+    check(
+      replay.accepted && replay.idempotentReplay && replay.balance == 0,
+      'Same operation replays without another spend',
+    );
+    final denied = await client.consumeFeature(
+      featureId,
+      operationId: '$operationId-empty',
+      entityId: entityA,
+    );
+    check(!denied.accepted, 'Empty entity cannot spend another credit');
+    final untouched = await client.hasFeature(
+      featureId,
+      entityId: entityB,
+      policy: FeatureCheckPolicy.remote,
+    );
+    check(untouched.balance == 100, 'Entity B retains its assigned credits');
+    final unknown = await client.hasFeature(
+      featureId,
+      entityId: 'unknown-entity',
+      policy: FeatureCheckPolicy.remote,
+    );
+    check(!unknown.allowed, 'Unknown entity is denied');
+    await client.useFeatureAndWait(featureId, amount: 20, entityId: entityB);
+    final increased = await client.useFeatureAndWait(
+      featureId,
+      amount: 25,
+      entityId: entityB,
+      setUsage: true,
+    );
+    check(
+      increased.success && increased.usage?.remaining == 75,
+      'Cumulative report charges only the increase',
+    );
+    final lower = await client.useFeatureAndWait(
+      featureId,
+      amount: 10,
+      entityId: entityB,
+      setUsage: true,
+    );
+    check(
+      lower.success && lower.usage?.remaining == 75,
+      'Lower cumulative report restores no credits',
+    );
+  } else {
     final usage = await client.useFeatureAndWait(
       featureId,
       amount: 1,
@@ -68,13 +147,9 @@ Future<void> validateSdk(
     );
     check(
       usage.featureId == featureId,
-      'Usage result preserves Feature identity',
+      'Usage receipt preserves Feature identity',
     );
     report('Usage committed=${usage.success}, amount=${usage.amountUsed}');
-    // A rejected command is a valid outcome for a development customer without grants.
-    // Do not issue a second command to retry this usage.
-  } else {
-    report('SKIP: Metered usage unavailable on this backend');
   }
   await client.trigger(event, properties: {'source': 'sdk_lab_validation'});
   report(
@@ -95,9 +170,5 @@ Future<void> validateSdk(
   );
   await client.configure(configuration);
   check(client.isConfigured, 'Reconfiguration after shutdown succeeds');
-  report(
-    validateUsage
-        ? 'VALIDATION COMPLETE'
-        : 'VALIDATION COMPLETE — usage skipped',
-  );
+  report('VALIDATION COMPLETE');
 }

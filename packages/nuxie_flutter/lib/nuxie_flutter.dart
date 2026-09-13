@@ -17,6 +17,7 @@ export 'package:nuxie_flutter_platform_interface/nuxie_flutter_platform_interfac
         FeatureType,
         FeatureUsageInfo,
         FeatureUsageResult,
+        FeatureConsumptionResult,
         FeatureCheckPolicy,
         NuxiePurchaseController,
         NuxieStoreProduct,

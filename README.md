@@ -147,13 +147,30 @@ if (result.success) {
 `success` means the usage command committed. Spending the final unit still succeeds;
 do not reject that action because the returned remaining balance is now zero.
 `authoritativeAccess`, `usage`, and `amountUsed` are preserved in the result.
-The bridge preserves native doubles, but the current backend accepts positive whole
-units for remote checks. Use `1`, not `0.5`; unsupported amounts return a native error.
+Usage quantities must be positive whole units. Fractional or unsafe quantities fail before delivery.
+Entity IDs restrict access to explicitly assigned grants.
 
 Use `useFeature` when reporting usage without waiting for server confirmation. Call
 one of these methods per action, not both. Native code owns durable commands and retry
 identity. A disconnected channel or a Dart timeout does not cancel a committed command:
 never automatically issue another usage command after an ambiguous failure.
+
+For an explicit retry identity, persist an operation ID with the action and reuse it:
+
+```dart
+final receipt = await nuxie.consumeFeature(
+  'exports',
+  quantity: 1,
+  operationId: persistedActionId,
+  entityId: 'project-a',
+);
+if (receipt.accepted) {
+  // The command committed, even when receipt.active is false after the last unit.
+}
+```
+
+Cumulative `setUsage` reports only charge increases: 20 then 25 consumes 25 total;
+a later report of 10 restores no credits.
 
 Your host action and the usage command are separate operations. Server-side work still
 needs your backend's own authorization and idempotency.

@@ -132,6 +132,27 @@ class FakePlatform extends NuxieFlutterPlatform {
     );
   }
 
+  final commands = <String>[];
+  @override
+  Future<FeatureConsumptionResult> consumeFeature(
+    String featureId, {
+    double quantity = 1,
+    required String operationId,
+    String? entityId,
+  }) async {
+    commands.add('$featureId/$quantity/$operationId/$entityId');
+    return FeatureConsumptionResult(
+      operationId: operationId,
+      accepted: true,
+      code: 'consumed',
+      quantity: quantity,
+      balance: 0,
+      unlimited: false,
+      active: false,
+      idempotentReplay: commands.length > 1,
+    );
+  }
+
   @override
   dynamic noSuchMethod(Invocation invocation) =>
       throw UnimplementedError('${invocation.memberName}');
@@ -238,10 +259,41 @@ void main() {
     'spending the last unit succeeds without repeating consumption',
     () async {
       await client.configure(configuration);
-      final result = await client.useFeatureAndWait('credits', amount: 0.5);
+      final result = await client.useFeatureAndWait('credits', amount: 1);
       expect(result.success, true);
       expect(result.authoritativeAccess?.allowed, false);
       expect(platform.uses, 1);
+    },
+  );
+  test(
+    'forwards stable command identity and preserves final-unit replay receipts',
+    () async {
+      await client.configure(configuration);
+      final first = await client.consumeFeature(
+        'credits',
+        quantity: 1,
+        operationId: 'export-1',
+        entityId: 'a',
+      );
+      final replay = await client.consumeFeature(
+        'credits',
+        quantity: 1,
+        operationId: 'export-1',
+        entityId: 'a',
+      );
+      expect(first.accepted, true);
+      expect(first.active, false);
+      expect(first.balance, 0);
+      expect(replay.idempotentReplay, true);
+      expect(platform.commands, [
+        'credits/1.0/export-1/a',
+        'credits/1.0/export-1/a',
+      ]);
+      await expectLater(
+        client.consumeFeature('credits', quantity: 0.5, operationId: 'bad'),
+        throwsArgumentError,
+      );
+      expect(platform.commands.length, 2);
     },
   );
   test('rejects reserved events, nonfinite amounts and cyclic input', () async {

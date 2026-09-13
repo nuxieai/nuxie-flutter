@@ -34,6 +34,34 @@ void main() {
       expect(result.experience.journeyId, experience['journeyId']);
     });
   }
+  final consumptions =
+      jsonDecode(
+            File('test/fixtures/feature-consumption.json').readAsStringSync(),
+          )
+          as Map;
+  for (final vector in consumptions['vectors'] as List) {
+    test('native consumption fixture: ${vector['name']}', () {
+      final response = vector['response'] as Map;
+      final result = fromFeatureConsumptionResult(
+        PFeatureConsumptionResult(
+          operationId: response['operationId'] as String,
+          accepted: response['accepted'] as bool,
+          code: response['code'] as String,
+          quantity: (response['quantity'] as num).toDouble(),
+          balance: (response['balance'] as num?)?.toDouble(),
+          unlimited: response['unlimited'] as bool,
+          active: response['active'] as bool,
+          idempotentReplay: response['idempotentReplay'] as bool,
+        ),
+      );
+      expect(result.accepted, response['accepted']);
+      expect(result.active, response['active']);
+      expect(result.balance, response['balance']);
+      expect(result.idempotentReplay, response['idempotentReplay']);
+      expect(result.operationId, response['operationId']);
+      expect(result.quantity, response['quantity']);
+    });
+  }
   test('malformed snapshot cannot masquerade as denied ready state', () {
     expect(
       () => fromFeatureSnapshot(

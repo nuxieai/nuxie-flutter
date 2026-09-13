@@ -134,10 +134,15 @@ class _SdkLabState extends State<SdkLab> {
     record,
     event: event.text.trim(),
     featureId: feature.text.trim(),
-    validateUsage: const bool.fromEnvironment(
-      'NUXIE_VALIDATE_USAGE',
-      defaultValue: true,
-    ),
+    customerId: const String.fromEnvironment('NUXIE_CUSTOMER').isEmpty
+        ? null
+        : const String.fromEnvironment('NUXIE_CUSTOMER'),
+    entityA: const String.fromEnvironment('NUXIE_ENTITY_A').isEmpty
+        ? null
+        : const String.fromEnvironment('NUXIE_ENTITY_A'),
+    entityB: const String.fromEnvironment('NUXIE_ENTITY_B').isEmpty
+        ? null
+        : const String.fromEnvironment('NUXIE_ENTITY_B'),
   );
 
   Widget input(
@@ -325,7 +330,7 @@ class _SdkLabState extends State<SdkLab> {
               ],
             ),
             const Text(
-              'The current backend rejects metered usage and entity-scoped checks (UNIV-3135). These controls show native results and errors. Never repeat an ambiguous usage command.',
+              'Usage spends positive whole credits. An entity can spend only its assigned grants. A final-credit command can succeed with no credits remaining.',
             ),
           ],
           if (page == 2) ...[

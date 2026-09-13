@@ -50,23 +50,23 @@ Commit Dart, Swift, and Kotlin outputs together. Do not hand-edit generated file
 
 ## Attended local validation (September 2026)
 
-The current local backend rejects the native usage command and entity-scoped
-queries ([UNIV-3135](https://universe.basis.dev/issue/UNIV-3135)). The Lab supports
-`--dart-define=NUXIE_VALIDATE_USAGE=false` for explicitly scoped local runs; it prints
-`SKIP` and labels completion with “usage skipped”. The integration test does not
-set this override and remains strict. A scoped run is not full usage qualification.
+Both the iPhone 17 Pro / iOS 26.5 simulator and Android API 36 emulator completed
+strict SDK Lab validation against the local authoritative backend with separate
+fresh customers. Each customer had 100 credits assigned to entity A, 100 to B,
+and 100 unscoped credits. Both runs proved:
 
-Local authority routing also needed a temporary Miniflare version/registry alignment,
-tracked in [UNIV-3134](https://universe.basis.dev/issue/UNIV-3134). No workaround is
-part of the Flutter production API.
+- Profile readiness, identify, locale override and clear.
+- Consuming A's final 100 credits returns accepted with zero remaining.
+- Reusing the operation ID replays the original receipt without another spend.
+- An empty A and an unknown entity deny; B retains its 100 credits.
+- Cumulative B reports 20 then 25 consume 25 total; a lower 10 report leaves 75.
+- Identity reset, shutdown, and reconfiguration complete.
 
-Attended evidence: iPhone 17 Pro / iOS 26.5 simulator and Android API 36 emulator
-both completed the explicitly scoped Lab procedure: contract negotiation, native
-version, anonymous identity, ready profile, identify, locale override/reset, remote
-Exports Feature denial, authored event invocation, identity reset, shutdown, and
-reconfiguration. Both rendered the published Experience. Screenshots are checked in
-under `screenshots/`. iOS also completed the Experience through its Continue action.
+Use `NUXIE_CUSTOMER`, `NUXIE_ENTITY_A`, and `NUXIE_ENTITY_B` Dart defines with
+fresh seeded customers to repeat these grant assertions. The validation has no
+usage-skip switch. `NUXIE_EVENT` selects an authored event; event invocation alone
+does not prove presentation or App Action delivery. Inspect those separately.
 
-These runs did not qualify an allowed grant, metered consumption, App Action routing,
-or real StoreKit / Play purchase and restore outcomes. The test customer had no grants.
-The strict integration test remains a release requirement after the backend fix.
+The prior attended presentation screenshots remain under `screenshots/`.
+Real StoreKit / Play purchase and restore outcomes require their own provider
+qualification; the local grant test does not claim that evidence.

@@ -142,6 +142,22 @@ class NuxieFlutterNativePlatformImpl extends NuxieFlutterPlatform {
   }
 
   @override
+  Future<FeatureConsumptionResult> consumeFeature(
+    String featureId, {
+    double quantity = 1,
+    required String operationId,
+    String? entityId,
+  }) async {
+    final result = await _hostApi.consumeFeature(
+      featureId,
+      quantity,
+      operationId,
+      entityId,
+    );
+    return fromFeatureConsumptionResult(result);
+  }
+
+  @override
   Future<void> useFeature(
     String featureId, {
     double amount = 1,

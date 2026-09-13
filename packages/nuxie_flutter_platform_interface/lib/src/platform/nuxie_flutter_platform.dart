@@ -61,6 +61,13 @@ abstract class NuxieFlutterPlatform extends PlatformInterface {
     FeatureCheckPolicy policy = FeatureCheckPolicy.cacheFirst,
   });
 
+  Future<FeatureConsumptionResult> consumeFeature(
+    String featureId, {
+    double quantity = 1,
+    required String operationId,
+    String? entityId,
+  });
+
   Future<void> useFeature(
     String featureId, {
     double amount = 1,

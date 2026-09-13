@@ -257,6 +257,23 @@ public final class NuxieFlutterNativePlugin: NSObject, FlutterPlugin, PNuxieHost
 #endif
   }
 
+  func consumeFeature(featureId: String, quantity: Double, operationId: String, entityId: String?,
+    completion: @escaping (Result<PFeatureConsumptionResult, Error>) -> Void) {
+#if canImport(Nuxie)
+    Task {
+      do {
+        let result = try await NuxieSDK.shared.consumeFeature(featureId, quantity: quantity,
+          operationId: operationId, entityId: entityId)
+        completion(.success(PFeatureConsumptionResult(operationId: result.operationId, accepted: result.accepted,
+          code: result.code, quantity: result.quantity, balance: result.balance, unlimited: result.unlimited,
+          active: result.active, idempotentReplay: result.idempotentReplay)))
+      } catch { completion(.failure(error)) }
+    }
+#else
+    completion(.failure(bridgeError("NATIVE_SDK_UNAVAILABLE", "Nuxie iOS SDK is not linked")))
+#endif
+  }
+
   func useFeature(
     featureId: String,
     amount: Double,

@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/nuxieai/nuxie-ios",
-  "revision": "1c6ca493d50b5df477d79ccf734951ed774e78d9",
+  "revision": "502c351308af118a645363440e86535fcf8a108e",
   "files": [
     {
       "file": "app-action.json",
@@ -21,6 +21,11 @@
       "file": "outcome-commit.json",
       "source": "purchases/outcome-commit.json",
       "sha256": "9ba6554f5660d3b5689865d1922818bd4f31483162a02be0054282ccfd521171"
+    },
+    {
+      "file": "feature-consumption.json",
+      "source": "encodings/feature-consumption.json",
+      "sha256": "8b34dd248e9f28a0bead3b07f146b3579cb47f1f486489c46afefaf21f914b72"
     }
   ]
 }

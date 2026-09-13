@@ -304,6 +304,68 @@ data class PFeatureAccess (
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
+data class PFeatureConsumptionResult (
+  val operationId: String? = null,
+  val accepted: Boolean? = null,
+  val code: String? = null,
+  val quantity: Double? = null,
+  val balance: Double? = null,
+  val unlimited: Boolean? = null,
+  val active: Boolean? = null,
+  val idempotentReplay: Boolean? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): PFeatureConsumptionResult {
+      val operationId = pigeonVar_list[0] as String?
+      val accepted = pigeonVar_list[1] as Boolean?
+      val code = pigeonVar_list[2] as String?
+      val quantity = pigeonVar_list[3] as Double?
+      val balance = pigeonVar_list[4] as Double?
+      val unlimited = pigeonVar_list[5] as Boolean?
+      val active = pigeonVar_list[6] as Boolean?
+      val idempotentReplay = pigeonVar_list[7] as Boolean?
+      return PFeatureConsumptionResult(operationId, accepted, code, quantity, balance, unlimited, active, idempotentReplay)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      operationId,
+      accepted,
+      code,
+      quantity,
+      balance,
+      unlimited,
+      active,
+      idempotentReplay,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as PFeatureConsumptionResult
+    return NuxieBridgePigeonUtils.deepEquals(this.operationId, other.operationId) && NuxieBridgePigeonUtils.deepEquals(this.accepted, other.accepted) && NuxieBridgePigeonUtils.deepEquals(this.code, other.code) && NuxieBridgePigeonUtils.deepEquals(this.quantity, other.quantity) && NuxieBridgePigeonUtils.deepEquals(this.balance, other.balance) && NuxieBridgePigeonUtils.deepEquals(this.unlimited, other.unlimited) && NuxieBridgePigeonUtils.deepEquals(this.active, other.active) && NuxieBridgePigeonUtils.deepEquals(this.idempotentReplay, other.idempotentReplay)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.operationId)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.accepted)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.code)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.quantity)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.balance)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.unlimited)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.active)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.idempotentReplay)
+    return result
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
 data class PFeatureUsageResult (
   val success: Boolean? = null,
   val featureId: String? = null,
@@ -879,55 +941,60 @@ private open class NuxieBridgePigeonCodec : StandardMessageCodec() {
       }
       131.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PFeatureUsageResult.fromList(it)
+          PFeatureConsumptionResult.fromList(it)
         }
       }
       132.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PFeatureSnapshot.fromList(it)
+          PFeatureUsageResult.fromList(it)
         }
       }
       133.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PVersions.fromList(it)
+          PFeatureSnapshot.fromList(it)
         }
       }
       134.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PExperienceRef.fromList(it)
+          PVersions.fromList(it)
         }
       }
       135.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PAppAction.fromList(it)
+          PExperienceRef.fromList(it)
         }
       }
       136.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PActivityInfo.fromList(it)
+          PAppAction.fromList(it)
         }
       }
       137.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PPurchaseRequest.fromList(it)
+          PActivityInfo.fromList(it)
         }
       }
       138.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PRestoreRequest.fromList(it)
+          PPurchaseRequest.fromList(it)
         }
       }
       139.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PPurchaseResult.fromList(it)
+          PRestoreRequest.fromList(it)
         }
       }
       140.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PRestoreResult.fromList(it)
+          PPurchaseResult.fromList(it)
         }
       }
       141.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          PRestoreResult.fromList(it)
+        }
+      }
+      142.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           PIntroductoryTerms.fromList(it)
         }
@@ -945,48 +1012,52 @@ private open class NuxieBridgePigeonCodec : StandardMessageCodec() {
         stream.write(130)
         writeValue(stream, value.toList())
       }
-      is PFeatureUsageResult -> {
+      is PFeatureConsumptionResult -> {
         stream.write(131)
         writeValue(stream, value.toList())
       }
-      is PFeatureSnapshot -> {
+      is PFeatureUsageResult -> {
         stream.write(132)
         writeValue(stream, value.toList())
       }
-      is PVersions -> {
+      is PFeatureSnapshot -> {
         stream.write(133)
         writeValue(stream, value.toList())
       }
-      is PExperienceRef -> {
+      is PVersions -> {
         stream.write(134)
         writeValue(stream, value.toList())
       }
-      is PAppAction -> {
+      is PExperienceRef -> {
         stream.write(135)
         writeValue(stream, value.toList())
       }
-      is PActivityInfo -> {
+      is PAppAction -> {
         stream.write(136)
         writeValue(stream, value.toList())
       }
-      is PPurchaseRequest -> {
+      is PActivityInfo -> {
         stream.write(137)
         writeValue(stream, value.toList())
       }
-      is PRestoreRequest -> {
+      is PPurchaseRequest -> {
         stream.write(138)
         writeValue(stream, value.toList())
       }
-      is PPurchaseResult -> {
+      is PRestoreRequest -> {
         stream.write(139)
         writeValue(stream, value.toList())
       }
-      is PRestoreResult -> {
+      is PPurchaseResult -> {
         stream.write(140)
         writeValue(stream, value.toList())
       }
-      is PIntroductoryTerms -> {
+      is PRestoreResult -> {
         stream.write(141)
+        writeValue(stream, value.toList())
+      }
+      is PIntroductoryTerms -> {
+        stream.write(142)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -1009,6 +1080,7 @@ interface PNuxieHostApi {
   fun dismiss(callback: (Result<Unit>) -> Unit)
   fun setLocaleIdentifier(localeIdentifier: String?, callback: (Result<Unit>) -> Unit)
   fun hasFeature(featureId: String, requiredBalance: Double, entityId: String?, policy: String, callback: (Result<PFeatureAccess>) -> Unit)
+  fun consumeFeature(featureId: String, quantity: Double, operationId: String, entityId: String?, callback: (Result<PFeatureConsumptionResult>) -> Unit)
   fun useFeature(featureId: String, amount: Double, entityId: String?, metadata: Map<String?, Any?>?)
   fun useFeatureAndWait(featureId: String, amount: Double, entityId: String?, setUsage: Boolean, metadata: Map<String?, Any?>?, callback: (Result<PFeatureUsageResult>) -> Unit)
   fun completePurchase(requestId: String, result: PPurchaseResult)
@@ -1237,6 +1309,29 @@ interface PNuxieHostApi {
             val entityIdArg = args[2] as String?
             val policyArg = args[3] as String
             api.hasFeature(featureIdArg, requiredBalanceArg, entityIdArg, policyArg) { result: Result<PFeatureAccess> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(NuxieBridgePigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(NuxieBridgePigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.consumeFeature$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val featureIdArg = args[0] as String
+            val quantityArg = args[1] as Double
+            val operationIdArg = args[2] as String
+            val entityIdArg = args[3] as String?
+            api.consumeFeature(featureIdArg, quantityArg, operationIdArg, entityIdArg) { result: Result<PFeatureConsumptionResult> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(NuxieBridgePigeonUtils.wrapError(error))
