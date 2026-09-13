@@ -1,165 +1,397 @@
 import 'dart:async';
-
+import 'validation.dart';
 import 'package:flutter/material.dart';
 import 'package:nuxie_flutter/nuxie_flutter.dart';
 
 void main() {
-  runApp(const NuxieExampleApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(NuxieExample(client: Nuxie.instance));
 }
 
-class NuxieExampleApp extends StatelessWidget {
-  const NuxieExampleApp({super.key, this.initializeSdk = true});
-
-  final bool initializeSdk;
-
+/// The same app and API exercise run on iOS and Android.
+class NuxieExample extends StatelessWidget {
+  const NuxieExample({super.key, required this.client});
+  final NuxieClient client;
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Nuxie Flutter Example',
-      home: DemoScreen(initializeSdk: initializeSdk),
-    );
-  }
+  Widget build(BuildContext context) => MaterialApp(
+    title: 'Nuxie SDK Lab',
+    debugShowCheckedModeBanner: false,
+    theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.deepPurple),
+    darkTheme: ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorSchemeSeed: Colors.deepPurple,
+    ),
+    home: SdkLab(client: client),
+  );
 }
 
-class DemoScreen extends StatefulWidget {
-  const DemoScreen({super.key, required this.initializeSdk});
-
-  final bool initializeSdk;
-
+class SdkLab extends StatefulWidget {
+  const SdkLab({super.key, required this.client});
+  final NuxieClient client;
   @override
-  State<DemoScreen> createState() => _DemoScreenState();
+  State<SdkLab> createState() => _SdkLabState();
 }
 
-class _DemoScreenState extends State<DemoScreen> {
-  Nuxie? _nuxie;
-  FeatureAccess? _feature;
-  String? _error;
-  final List<String> _activity = <String>[];
-  StreamSubscription<NuxieActivityInfo>? _activitySubscription;
-  StreamSubscription<AppAction>? _actionSubscription;
+class _SdkLabState extends State<SdkLab> {
+  final iosKey = TextEditingController(
+    text: const String.fromEnvironment('NUXIE_IOS_API_KEY'),
+  );
+  final androidKey = TextEditingController(
+    text: const String.fromEnvironment('NUXIE_ANDROID_API_KEY'),
+  );
+  final user = TextEditingController(text: 'flutter-sdk-lab');
+  final event = TextEditingController(
+    text: const String.fromEnvironment(
+      'NUXIE_EVENT',
+      defaultValue: 'sdk_lab_opened',
+    ),
+  );
+  final feature = TextEditingController(
+    text: const String.fromEnvironment(
+      'NUXIE_FEATURE',
+      defaultValue: 'exports',
+    ),
+  );
+  final amount = TextEditingController(text: '1');
+  final entity = TextEditingController();
+  final locale = TextEditingController();
+  final List<String> log = [];
+  final List<StreamSubscription<dynamic>> subscriptions = [];
+  bool busy = false;
+  String? identity;
+  int page = 0;
+  NuxieClient get nuxie => widget.client;
 
   @override
   void initState() {
     super.initState();
-    if (widget.initializeSdk) {
-      unawaited(_initialize());
-    }
-  }
-
-  Future<void> _initialize() async {
-    try {
-      final nuxie = await Nuxie.initialize(
-        apiKey: const String.fromEnvironment(
-          'NUXIE_API_KEY',
-          defaultValue: 'NX_DEVELOPMENT_KEY',
-        ),
-        options: const NuxieOptions(
-          environment: NuxieEnvironment.development,
-          logLevel: NuxieLogLevel.debug,
-        ),
-        purchaseController: const _ExamplePurchaseController(),
-      );
-      _activitySubscription = nuxie.activities.listen((event) {
-        _append('activity ${event.name}');
-      });
-      _actionSubscription = nuxie.appActions.listen((action) {
-        _append('app action ${action.name}');
-      });
-      if (mounted) {
-        setState(() => _nuxie = nuxie);
-      }
-      await _loadFeature();
-    } catch (error) {
-      if (mounted) {
-        setState(() => _error = error.toString());
-      }
-    }
-  }
-
-  Future<void> _loadFeature() async {
-    final nuxie = _nuxie;
-    if (nuxie == null) return;
-    try {
-      final feature = await nuxie.hasFeature(
-        'pro_export',
-        policy: FeatureCheckPolicy.remote,
-      );
-      if (mounted) {
-        setState(() => _feature = feature);
-      }
-    } catch (error) {
-      if (mounted) {
-        setState(() => _error = error.toString());
-      }
-    }
-  }
-
-  void _captureEvent() {
-    _nuxie?.trigger(
-      'paywall_opened',
-      properties: <String, Object?>{'source': 'flutter_example'},
+    // These listeners exist before configure, including startup delivery.
+    subscriptions.add(
+      nuxie.activities.listen((value) {
+        record('${value.name} · ${value.id}\n${value.properties}');
+      }, onError: (Object error) => record('Activity error: $error')),
     );
-    _append('event captured');
+    subscriptions.add(
+      nuxie.appActions.listen((value) {
+        record('App Action: ${value.name}\n${value.payload ?? {}}');
+        if (value.name == 'open_library' && mounted) {
+          setState(() => page = 1);
+        }
+      }, onError: (Object error) => record('App Action error: $error')),
+    );
+    if (const bool.fromEnvironment('NUXIE_VALIDATE')) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        unawaited(run('Validation', validate));
+      });
+    }
   }
 
-  void _append(String value) {
+  void record(String value) {
+    debugPrint('SDK_LAB: $value');
     if (!mounted) return;
     setState(() {
-      _activity.insert(0, value);
-      if (_activity.length > 20) _activity.removeLast();
+      log.insert(0, '${DateTime.now().toLocal().toIso8601String()}\n$value');
+      if (log.length > 100) log.removeLast();
     });
   }
 
-  @override
-  void dispose() {
-    unawaited(_activitySubscription?.cancel());
-    unawaited(_actionSubscription?.cancel());
-    super.dispose();
+  Future<void> run(String label, Future<Object?> Function() operation) async {
+    if (busy) return;
+    setState(() => busy = true);
+    try {
+      final result = await operation();
+      record('$label ✓${result == null ? '' : '\n$result'}');
+    } catch (error) {
+      record('$label failed\n$error');
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Nuxie Flutter Example')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: <Widget>[
-          Text('Configured: ${_nuxie?.isConfigured ?? false}'),
-          Text('Feature allowed: ${_feature?.allowed ?? false}'),
-          Text('Feature balance: ${_feature?.balance ?? 'n/a'}'),
-          if (_error != null) Text('Error: $_error'),
-          const SizedBox(height: 12),
-          FilledButton(
-            onPressed: _nuxie == null ? null : _captureEvent,
-            child: const Text('Capture Event'),
-          ),
-          OutlinedButton(
-            onPressed: _nuxie == null ? null : _loadFeature,
-            child: const Text('Load Feature'),
-          ),
-          const SizedBox(height: 12),
-          const Text('Recent native activity'),
-          for (final event in _activity) Text(event),
-        ],
+  Future<void> configure() async {
+    await nuxie.configure(
+      NuxieConfiguration(
+        apiKeys: NuxieApiKeys(
+          ios: iosKey.text.trim(),
+          android: androidKey.text.trim(),
+        ),
+        environment: NuxieEnvironment.development,
       ),
     );
-  }
-}
-
-class _ExamplePurchaseController implements NuxiePurchaseController {
-  const _ExamplePurchaseController();
-
-  @override
-  Future<NuxiePurchaseResult> purchase(NuxiePurchaseRequest request) async {
-    return const NuxiePurchaseResult(
-      type: NuxiePurchaseResultType.cancelled,
-    );
+    identity = await nuxie.getDistinctId();
   }
 
+  Future<void> validate() => validateSdk(
+    nuxie,
+    NuxieConfiguration(
+      apiKeys: NuxieApiKeys(
+        ios: iosKey.text.trim(),
+        android: androidKey.text.trim(),
+      ),
+      environment: NuxieEnvironment.development,
+    ),
+    record,
+    event: event.text.trim(),
+    featureId: feature.text.trim(),
+  );
+
+  Widget input(
+    String label,
+    TextEditingController controller, {
+    String? hint,
+  }) => Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        helperText: hint,
+        border: const OutlineInputBorder(),
+      ),
+    ),
+  );
+
+  Widget action(
+    String title,
+    Future<Object?> Function() call, {
+    bool needsSetup = true,
+  }) => OutlinedButton(
+    onPressed: busy || (needsSetup && !nuxie.isConfigured)
+        ? null
+        : () => run(title, call),
+    child: Text(title),
+  );
+
   @override
-  Future<NuxieRestoreResult> restore(NuxieRestoreRequest request) async {
-    return const NuxieRestoreResult(
-      type: NuxieRestoreResultType.noPurchases,
-    );
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      title: const Text('Nuxie SDK Lab'),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: Chip(
+            label: Text(nuxie.isConfigured ? 'Connected' : 'Not configured'),
+          ),
+        ),
+      ],
+    ),
+    body: SafeArea(
+      child: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          Text(
+            [
+              'Connect your app',
+              'Features & usage',
+              'Events & callbacks',
+            ][page],
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Development environment · ${Theme.of(context).platform.name}',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          if (busy) const LinearProgressIndicator(),
+          const SizedBox(height: 20),
+          if (page == 0) ...[
+            const Text(
+              'Use your development app’s public keys. Purchases and presentation are handled by the native SDK.',
+            ),
+            const SizedBox(height: 16),
+            input('iOS public API key', iosKey),
+            input('Android public API key', androidKey),
+            FilledButton(
+              onPressed: busy ? null : () => run('Configure', configure),
+              child: const Text('Configure'),
+            ),
+            OutlinedButton(
+              onPressed: busy ? null : () => run('Validation', validate),
+              child: const Text('Validate with a disposable customer'),
+            ),
+            const SizedBox(height: 16),
+            SelectableText(
+              'Wrapper ${nuxie.versions.wrapper}\nNative ${nuxie.versions.native ?? '—'}\nContract ${nuxie.versions.contract ?? '—'}\nIdentity ${identity ?? '—'}',
+            ),
+            const Divider(height: 32),
+            input('Customer ID', user),
+            Wrap(
+              spacing: 8,
+              children: [
+                action('Identify', () async {
+                  await nuxie.identify(
+                    user.text,
+                    userProperties: {'integration': 'flutter'},
+                  );
+                  identity = await nuxie.getDistinctId();
+                  return identity;
+                }),
+                action('Read identity', () async {
+                  identity = await nuxie.getDistinctId();
+                  return 'distinct: $identity\nanonymous: ${await nuxie.getAnonymousId()}\nidentified: ${await nuxie.getIsIdentified()}';
+                }),
+                action('Reset user', () async {
+                  await nuxie.reset();
+                  identity = await nuxie.getDistinctId();
+                  return identity;
+                }),
+              ],
+            ),
+            input(
+              'Locale override',
+              locale,
+              hint: 'Empty follows the device locale',
+            ),
+            action(
+              'Set locale',
+              () => nuxie.setLocaleIdentifier(
+                locale.text.isEmpty ? null : locale.text,
+              ),
+            ),
+            action('Restore purchases', () async {
+              final result = await nuxie.restorePurchases();
+              return '${result.type.name}${result.message == null ? '' : ': ${result.message}'}';
+            }),
+            action('Shutdown', () async {
+              await nuxie.shutdown();
+              identity = null;
+              return null;
+            }),
+          ],
+          if (page == 1) ...[
+            ValueListenableBuilder<NuxieFeatureSnapshot>(
+              valueListenable: nuxie.features,
+              builder: (context, snapshot, _) => Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Native state: ${snapshot.state.name}'),
+                      if (snapshot.all.isEmpty)
+                        const Text('No Feature values admitted yet.'),
+                      for (final entry in snapshot.all.entries)
+                        Text(
+                          '${entry.key}: ${entry.value.allowed ? 'allowed' : 'denied'} · ${entry.value.unlimited ? 'unlimited' : entry.value.balance ?? 'no balance'}',
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            input('Feature ID', feature),
+            input('Amount / required balance', amount),
+            input(
+              'Entity ID',
+              entity,
+              hint: 'Optional; scoped checks never use global snapshot deltas',
+            ),
+            Wrap(
+              spacing: 8,
+              children: [
+                for (final policy in FeatureCheckPolicy.values)
+                  action('Check ${policy.name}', () async {
+                    final value = await nuxie.hasFeature(
+                      feature.text,
+                      requiredBalance: double.parse(amount.text),
+                      entityId: entity.text.isEmpty ? null : entity.text,
+                      policy: policy,
+                    );
+                    return 'allowed=${value.allowed}, unlimited=${value.unlimited}, balance=${value.balance}';
+                  }),
+                action('Consume & wait', () async {
+                  final result = await nuxie.useFeatureAndWait(
+                    feature.text,
+                    amount: double.parse(amount.text),
+                    entityId: entity.text.isEmpty ? null : entity.text,
+                    metadata: {'source': 'flutter_sdk_lab'},
+                  );
+                  return 'committed=${result.success}, used=${result.amountUsed}, remaining=${result.usage?.remaining}, authoritative=${result.authoritativeAccess?.allowed}\n${result.message ?? ''}';
+                }),
+                action(
+                  'Report usage',
+                  () => nuxie.useFeature(
+                    feature.text,
+                    amount: double.parse(amount.text),
+                    entityId: entity.text.isEmpty ? null : entity.text,
+                  ),
+                ),
+              ],
+            ),
+            const Text(
+              'Usage buttons consume development Feature balance. A timeout does not cancel a native command; do not repeat an ambiguous command.',
+            ),
+          ],
+          if (page == 2) ...[
+            input('Trigger event', event),
+            const Text(
+              'Use an event authored as a Journey entry condition to test native presentation. An App Action named open_library selects the Features tab.',
+            ),
+            Wrap(
+              spacing: 8,
+              children: [
+                action(
+                  'Trigger event',
+                  () => nuxie.trigger(
+                    event.text,
+                    properties: {'source': 'flutter_sdk_lab'},
+                  ),
+                ),
+                action('Dismiss Experience', nuxie.dismiss),
+              ],
+            ),
+          ],
+          const Divider(height: 32),
+          Text(
+            'Activity & results',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          if (log.isEmpty)
+            const Text('Commands and native callbacks will appear here.'),
+          for (final line in log.take(20))
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: SelectableText(
+                line,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+        ],
+      ),
+    ),
+    bottomNavigationBar: NavigationBar(
+      selectedIndex: page,
+      onDestinationSelected: (value) => setState(() => page = value),
+      destinations: const [
+        NavigationDestination(icon: Icon(Icons.link), label: 'Connect'),
+        NavigationDestination(
+          icon: Icon(Icons.verified_user_outlined),
+          label: 'Features',
+        ),
+        NavigationDestination(icon: Icon(Icons.bolt), label: 'Events'),
+      ],
+    ),
+  );
+
+  @override
+  void dispose() {
+    for (final subscription in subscriptions) {
+      unawaited(subscription.cancel());
+    }
+    for (final controller in [
+      iosKey,
+      androidKey,
+      user,
+      event,
+      feature,
+      amount,
+      entity,
+      locale,
+    ]) {
+      controller.dispose();
+    }
+    super.dispose();
   }
 }

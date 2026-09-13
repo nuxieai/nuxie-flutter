@@ -1,263 +1,114 @@
 import 'dart:async';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nuxie_flutter/nuxie_flutter.dart';
+import 'package:nuxie_flutter_platform_interface/nuxie_flutter_platform_interface.dart';
 
-void main() {
-  test('instance access before initialize throws', () {
-    expect(
-      () => Nuxie.instance,
-      throwsA(
-        isA<NuxieException>().having((e) => e.code, 'code', 'NOT_CONFIGURED'),
-      ),
-    );
-  });
+const configuration = NuxieConfiguration(
+  apiKeys: NuxieApiKeys(ios: 'ios', android: 'android'),
+);
 
-  group('Nuxie', () {
-    late _FakePlatform fake;
-
-    setUp(() {
-      fake = _FakePlatform();
-    });
-
-    tearDown(() async {
-      try {
-        await Nuxie.instance.shutdown();
-      } catch (_) {
-        // No configured singleton remains.
-      }
-      await fake.dispose();
-    });
-
-    test('initialize forwards only the compact configuration', () async {
-      final nuxie = await Nuxie.initialize(
-        apiKey: 'NX_TEST',
-        options: const NuxieOptions(
-          environment: NuxieEnvironment.development,
-          purchaseHandlingMode: PurchaseHandlingMode.observer,
-        ),
-        platformOverride: fake,
-      );
-
-      expect(identical(nuxie, Nuxie.instance), isTrue);
-      expect(fake.apiKey, 'NX_TEST');
-      expect(fake.options?.environment, NuxieEnvironment.development);
-      expect(fake.usingPurchaseController, isFalse);
-    });
-
-    test(
-      'trigger is event-only and reset defaults to a fresh anonymous id',
-      () async {
-        final nuxie = await Nuxie.initialize(
-          apiKey: 'NX_TEST',
-          platformOverride: fake,
-        );
-
-        expect(
-          () => nuxie.trigger(
-            'premium_tapped',
-            properties: <String, Object?>{'source': 'settings'},
-          ),
-          returnsNormally,
-        );
-        await nuxie.reset();
-
-        expect(fake.events.single.event, 'premium_tapped');
-        expect(fake.events.single.properties?['source'], 'settings');
-        expect(fake.resetValues, <bool>[false]);
-      },
-    );
-
-    test(
-      'Feature APIs preserve policy, fractions, and authoritative access',
-      () async {
-        final nuxie = await Nuxie.initialize(
-          apiKey: 'NX_TEST',
-          platformOverride: fake,
-        );
-
-        final access = await nuxie.hasFeature(
-          'credits',
-          requiredBalance: 2.5,
-          entityId: 'workspace-1',
-          policy: FeatureCheckPolicy.remote,
-        );
-        final usage = await nuxie.useFeatureAndWait('credits', amount: 1.5);
-
-        expect(access.balance, 3.5);
-        expect(fake.featurePolicy, FeatureCheckPolicy.remote);
-        expect(fake.requiredBalance, 2.5);
-        expect(usage.authoritativeAccess?.balance, 8);
-      },
-    );
-
-    test('typed activity and App Action streams are exposed', () async {
-      final nuxie = await Nuxie.initialize(
-        apiKey: 'NX_TEST',
-        platformOverride: fake,
-      );
-      final activity = nuxie.activities.first;
-      final action = nuxie.appActions.first;
-
-      fake.emitActivity(
-        const NuxieActivityInfo(
-          schemaVersion: 1,
-          id: 'event-1',
-          timestampMs: 1,
-          receivedAtMs: 2,
-          name: r'$journey_leg_started',
-          properties: <String, Object>{'journey_id': 'journey-1'},
-        ),
-      );
-      fake.emitAction(
-        const AppAction(
-          name: 'open_settings',
-          payload: <String, Object>{'tab': 'billing'},
-          experience: ExperienceRef(
-            experienceId: 'experience-1',
-            journeyId: 'journey-1',
-          ),
-        ),
-      );
-
-      expect((await activity).name, r'$journey_leg_started');
-      expect((await action).experience.journeyId, 'journey-1');
-    });
-
-    test('purchase controller completes canonical results', () async {
-      final controller = _PurchaseController();
-      await Nuxie.initialize(
-        apiKey: 'NX_TEST',
-        purchaseController: controller,
-        platformOverride: fake,
-      );
-
-      fake.emitPurchase(
-        const NuxiePurchaseRequest(
-          requestId: 'purchase-1',
-          platform: 'android',
-          productId: 'pro',
-          storeProductId: 'pro:monthly',
-          timestampMs: 1,
-        ),
-      );
-      fake.emitRestore(
-        const NuxieRestoreRequest(
-          requestId: 'restore-1',
-          platform: 'android',
-          timestampMs: 2,
-        ),
-      );
-      await Future<void>.delayed(const Duration(milliseconds: 1));
-
-      expect(fake.usingPurchaseController, isTrue);
-      expect(
-        fake.completedPurchases.single.result.type,
-        NuxiePurchaseResultType.purchased,
-      );
-      expect(
-        fake.completedRestores.single.result.type,
-        NuxieRestoreResultType.noPurchases,
-      );
-    });
-  });
-}
-
-class _FakePlatform extends NuxieFlutterPlatform {
-  final _features = StreamController<FeatureAccessChangedEvent>.broadcast();
-  final _activities = StreamController<NuxieActivityInfo>.broadcast();
-  final _actions = StreamController<AppAction>.broadcast();
-  final _purchases = StreamController<NuxiePurchaseRequest>.broadcast();
-  final _restores = StreamController<NuxieRestoreRequest>.broadcast();
-
-  String? apiKey;
-  NuxieOptions? options;
-  bool? usingPurchaseController;
-  final List<_EventCall> events = <_EventCall>[];
-  final List<bool> resetValues = <bool>[];
-  final List<_CompletedPurchase> completedPurchases = <_CompletedPurchase>[];
-  final List<_CompletedRestore> completedRestores = <_CompletedRestore>[];
-  FeatureCheckPolicy? featurePolicy;
-  double? requiredBalance;
-
+class FakePlatform extends NuxieFlutterPlatform {
+  final snapshots = StreamController<NativeFeatureSnapshot>.broadcast(
+    sync: true,
+  );
+  final activity = StreamController<NuxieActivityInfo>.broadcast(sync: true);
+  final actions = StreamController<NuxieAppAction>.broadcast(sync: true);
+  final purchases = StreamController<NuxiePurchaseRequest>.broadcast(
+    sync: true,
+  );
+  final restores = StreamController<NuxieRestoreRequest>.broadcast(sync: true);
+  final completion = Completer<void>();
+  int setupCount = 0;
+  int shutdownCount = 0;
+  int contract = 2;
+  int uses = 0;
+  String session = '';
+  PurchaseResult? purchaseResult;
+  bool failSetup = false;
   @override
-  Stream<FeatureAccessChangedEvent> get featureAccessChanges =>
-      _features.stream;
+  Stream<NativeFeatureSnapshot> get featureSnapshots => snapshots.stream;
   @override
-  Stream<NuxieActivityInfo> get activities => _activities.stream;
+  Stream<NuxieActivityInfo> get activities => activity.stream;
   @override
-  Stream<AppAction> get appActions => _actions.stream;
+  Stream<NuxieAppAction> get appActions => actions.stream;
   @override
-  Stream<NuxiePurchaseRequest> get purchaseRequests => _purchases.stream;
+  Stream<NuxiePurchaseRequest> get purchaseRequests => purchases.stream;
   @override
-  Stream<NuxieRestoreRequest> get restoreRequests => _restores.stream;
-
+  Stream<NuxieRestoreRequest> get restoreRequests => restores.stream;
   @override
-  Future<void> configure({
+  Future<NuxieVersions> configure({
     required String apiKey,
-    NuxieOptions? options,
+    required String session,
+    required NuxieConfiguration options,
     required bool usingPurchaseController,
     required String wrapperVersion,
   }) async {
-    this.apiKey = apiKey;
-    this.options = options;
-    this.usingPurchaseController = usingPurchaseController;
-  }
-
-  @override
-  Future<void> shutdown() async {}
-  @override
-  Future<void> identify(
-    String distinctId, {
-    Map<String, Object?>? userProperties,
-    Map<String, Object?>? userPropertiesSetOnce,
-  }) async {}
-  @override
-  Future<void> reset({bool keepAnonymousId = false}) async {
-    resetValues.add(keepAnonymousId);
-  }
-
-  @override
-  Future<String> getDistinctId() async => 'distinct';
-  @override
-  Future<String> getAnonymousId() async => 'anonymous';
-  @override
-  Future<bool> getIsIdentified() async => true;
-
-  @override
-  void trigger(String event, {Map<String, Object?>? properties}) {
-    events.add(_EventCall(event, properties));
-  }
-
-  @override
-  Future<void> dismiss() async {}
-  @override
-  Future<void> setLocaleIdentifier(String? localeIdentifier) async {}
-
-  @override
-  Future<FeatureAccess> hasFeature(
-    String featureId, {
-    double requiredBalance = 1,
-    String? entityId,
-    FeatureCheckPolicy policy = FeatureCheckPolicy.cacheFirst,
-  }) async {
-    this.requiredBalance = requiredBalance;
-    featurePolicy = policy;
-    return const FeatureAccess(
-      allowed: true,
-      unlimited: false,
-      balance: 3.5,
-      type: FeatureType.metered,
+    this.session = session;
+    setupCount++;
+    if (failSetup) throw StateError('setup failed');
+    activity.add(
+      NuxieActivityInfo(
+        schemaVersion: 1,
+        id: 'startup',
+        timestampMs: 1,
+        receivedAtMs: 2,
+        name: 'app_opened',
+        properties: {},
+      ),
+    );
+    if (usingPurchaseController) {
+      purchases.add(
+        const NuxiePurchaseRequest(
+          requestId: 'purchase',
+          platform: 'ios',
+          productId: 'pro',
+          storeProductId: 'pro.monthly',
+          timestampMs: 1,
+        ),
+      );
+      await completion.future;
+    }
+    return NuxieVersions(
+      wrapper: wrapperVersion,
+      native: 'fixture',
+      contract: contract,
     );
   }
 
+  void emit(
+    int revision,
+    int generation, {
+    String? session,
+    double balance = 0.5,
+  }) => snapshots.add(
+    NativeFeatureSnapshot(
+      session: session ?? this.session,
+      identityGeneration: generation,
+      revision: revision,
+      value: NuxieFeatureSnapshot(
+        state: FeatureState.ready,
+        all: {
+          'credits': FeatureAccess(
+            allowed: true,
+            unlimited: false,
+            balance: balance,
+            type: FeatureType.creditSystem,
+          ),
+        },
+      ),
+    ),
+  );
   @override
-  void useFeature(
-    String featureId, {
-    double amount = 1,
-    String? entityId,
-    Map<String, Object?>? metadata,
-  }) {}
+  Future<void> completePurchase(String requestId, PurchaseResult result) async {
+    purchaseResult = result;
+    completion.complete();
+  }
+
+  @override
+  Future<void> shutdown() async {
+    shutdownCount++;
+  }
 
   @override
   Future<FeatureUsageResult> useFeatureAndWait(
@@ -267,69 +118,145 @@ class _FakePlatform extends NuxieFlutterPlatform {
     bool setUsage = false,
     Map<String, Object?>? metadata,
   }) async {
-    return const FeatureUsageResult(
+    uses++;
+    return FeatureUsageResult(
       success: true,
-      featureId: 'credits',
-      amountUsed: 1.5,
-      authoritativeAccess: FeatureAccess(
-        allowed: true,
+      featureId: featureId,
+      amountUsed: amount,
+      authoritativeAccess: const FeatureAccess(
+        allowed: false,
         unlimited: false,
-        balance: 8,
+        balance: 0,
         type: FeatureType.creditSystem,
       ),
     );
   }
 
   @override
-  void completePurchase(String requestId, NuxiePurchaseResult result) {
-    completedPurchases.add(_CompletedPurchase(requestId, result));
+  dynamic noSuchMethod(Invocation invocation) =>
+      throw UnimplementedError('${invocation.memberName}');
+}
+
+class Controller implements NuxiePurchaseController {
+  @override
+  Future<PurchaseResult> purchase(NuxieStoreProduct product) async {
+    expect(product.storeProductId, 'pro.monthly');
+    return const PurchaseResult.purchased();
   }
 
   @override
-  void completeRestore(String requestId, NuxieRestoreResult result) {
-    completedRestores.add(_CompletedRestore(requestId, result));
-  }
-
-  void emitActivity(NuxieActivityInfo value) => _activities.add(value);
-  void emitAction(AppAction value) => _actions.add(value);
-  void emitPurchase(NuxiePurchaseRequest value) => _purchases.add(value);
-  void emitRestore(NuxieRestoreRequest value) => _restores.add(value);
-
-  Future<void> dispose() async {
-    await Future.wait(<Future<void>>[
-      _features.close(),
-      _activities.close(),
-      _actions.close(),
-      _purchases.close(),
-      _restores.close(),
-    ]);
-  }
+  Future<RestoreResult> restorePurchases() async =>
+      const RestoreResult.noPurchases();
 }
 
-class _EventCall {
-  const _EventCall(this.event, this.properties);
-  final String event;
-  final Map<String, Object?>? properties;
-}
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  late FakePlatform platform;
+  final client = Nuxie.instance;
+  setUp(() {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    platform = FakePlatform();
+    NuxieFlutterPlatform.instance = platform;
+  });
+  tearDown(() async {
+    await client.shutdown();
+    debugDefaultTargetPlatformOverride = null;
+  });
+  test(
+    'startup delivery and concurrent configure share one connection',
+    () async {
+      final events = <String>[];
+      final subscription = client.activities.listen(
+        (event) => events.add(event.id),
+      );
+      await Future.wait([
+        client.configure(configuration),
+        client.configure(configuration),
+      ]);
+      await Future<void>.delayed(Duration.zero);
+      expect(platform.setupCount, 1);
+      expect(events, ['startup']);
+      await subscription.cancel();
+    },
+  );
+  test('incompatible contract rolls back native setup before retry', () async {
+    platform.contract = 99;
+    await expectLater(
+      client.configure(configuration),
+      throwsA(isA<NuxieException>()),
+    );
+    expect(client.isConfigured, isFalse);
+    expect(platform.shutdownCount, 1);
+    platform.contract = 2;
+    await client.configure(configuration);
+    expect(client.isConfigured, isTrue);
+  });
 
-class _CompletedPurchase {
-  const _CompletedPurchase(this.requestId, this.result);
-  final String requestId;
-  final NuxiePurchaseResult result;
-}
-
-class _CompletedRestore {
-  const _CompletedRestore(this.requestId, this.result);
-  final String requestId;
-  final NuxieRestoreResult result;
-}
-
-class _PurchaseController implements NuxiePurchaseController {
-  @override
-  Future<NuxiePurchaseResult> purchase(NuxiePurchaseRequest request) async =>
-      const NuxiePurchaseResult(type: NuxiePurchaseResultType.purchased);
-
-  @override
-  Future<NuxieRestoreResult> restore(NuxieRestoreRequest request) async =>
-      const NuxieRestoreResult(type: NuxieRestoreResultType.noPurchases);
+  test('purchase controller is active before native setup completes', () async {
+    await client.configure(
+      NuxieConfiguration(
+        apiKeys: configuration.apiKeys,
+        billing: NuxieBilling.external(Controller()),
+      ),
+    );
+    expect(platform.purchaseResult?.type, PurchaseResultType.purchased);
+  });
+  test('a different configuration fails without changing ownership', () async {
+    await client.configure(configuration);
+    await expectLater(
+      client.configure(
+        const NuxieConfiguration(
+          apiKeys: NuxieApiKeys(ios: 'different', android: 'android'),
+        ),
+      ),
+      throwsA(isA<NuxieException>()),
+    );
+    expect(platform.setupCount, 1);
+  });
+  test('failed setup can be retried explicitly', () async {
+    platform.failSetup = true;
+    await expectLater(client.configure(configuration), throwsStateError);
+    platform.failSetup = false;
+    await client.configure(configuration);
+    expect(client.isConfigured, true);
+    expect(platform.setupCount, 2);
+  });
+  test('old session, identity and revision cannot overwrite access', () async {
+    await client.configure(configuration);
+    platform.emit(3, 2);
+    platform.emit(2, 2, balance: 8);
+    platform.emit(4, 1, balance: 9);
+    platform.emit(5, 3, session: 'dead', balance: 10);
+    expect(client.features.value['credits']?.balance, 0.5);
+    await client.shutdown();
+    expect(client.features.value.state, FeatureState.unknown);
+    await client.configure(configuration);
+    platform.emit(1, 0, balance: 1.5);
+    expect(client.features.value['credits']?.balance, 1.5);
+  });
+  test(
+    'spending the last unit succeeds without repeating consumption',
+    () async {
+      await client.configure(configuration);
+      final result = await client.useFeatureAndWait('credits', amount: 0.5);
+      expect(result.success, true);
+      expect(result.authoritativeAccess?.allowed, false);
+      expect(platform.uses, 1);
+    },
+  );
+  test('rejects reserved events, nonfinite amounts and cyclic input', () async {
+    await client.configure(configuration);
+    await expectLater(client.trigger(r'$identify'), throwsArgumentError);
+    await expectLater(
+      client.useFeatureAndWait('credits', amount: double.nan),
+      throwsArgumentError,
+    );
+    final cyclic = <String, Object?>{};
+    cyclic['self'] = cyclic;
+    await expectLater(
+      client.identify('customer', userProperties: cyclic),
+      throwsArgumentError,
+    );
+    expect(platform.uses, 0);
+  });
 }

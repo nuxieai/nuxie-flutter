@@ -17,25 +17,26 @@ class NuxieFlutterNativePlatform {
 
 class NuxieFlutterNativePlatformImpl extends NuxieFlutterPlatform {
   NuxieFlutterNativePlatformImpl({PNuxieHostApi? hostApi})
-      : _hostApi = hostApi ?? PNuxieHostApi(),
-        super() {
+    : _hostApi = hostApi ?? PNuxieHostApi(),
+      super() {
     PNuxieFlutterApi.setUp(_callbacks);
   }
 
   final PNuxieHostApi _hostApi;
-  final StreamController<FeatureAccessChangedEvent> _featureChanges =
-      StreamController<FeatureAccessChangedEvent>.broadcast();
+  final StreamController<NativeFeatureSnapshot> _featureSnapshots =
+      StreamController<NativeFeatureSnapshot>.broadcast();
   final StreamController<NuxieActivityInfo> _activities =
       StreamController<NuxieActivityInfo>.broadcast();
-  final StreamController<AppAction> _appActions =
-      StreamController<AppAction>.broadcast();
+  final StreamController<NuxieAppAction> _appActions =
+      StreamController<NuxieAppAction>.broadcast();
   final StreamController<NuxiePurchaseRequest> _purchases =
       StreamController<NuxiePurchaseRequest>.broadcast();
   final StreamController<NuxieRestoreRequest> _restores =
       StreamController<NuxieRestoreRequest>.broadcast();
 
   late final _NuxieFlutterCallbacks _callbacks = _NuxieFlutterCallbacks(
-    onFeatureAccessChangedCallback: _featureChanges.add,
+    onFeatureSnapshotCallback: _featureSnapshots.add,
+    onFeatureError: _featureSnapshots.addError,
     onActivityCallback: _activities.add,
     onAppActionCallback: _appActions.add,
     onPurchaseRequestCallback: _purchases.add,
@@ -43,14 +44,14 @@ class NuxieFlutterNativePlatformImpl extends NuxieFlutterPlatform {
   );
 
   @override
-  Stream<FeatureAccessChangedEvent> get featureAccessChanges =>
-      _featureChanges.stream;
+  Stream<NativeFeatureSnapshot> get featureSnapshots =>
+      _featureSnapshots.stream;
 
   @override
   Stream<NuxieActivityInfo> get activities => _activities.stream;
 
   @override
-  Stream<AppAction> get appActions => _appActions.stream;
+  Stream<NuxieAppAction> get appActions => _appActions.stream;
 
   @override
   Stream<NuxiePurchaseRequest> get purchaseRequests => _purchases.stream;
@@ -59,21 +60,32 @@ class NuxieFlutterNativePlatformImpl extends NuxieFlutterPlatform {
   Stream<NuxieRestoreRequest> get restoreRequests => _restores.stream;
 
   @override
-  Future<void> configure({
+  Future<NuxieVersions> configure({
+    required String session,
     required String apiKey,
-    NuxieOptions? options,
+    required NuxieConfiguration options,
     required bool usingPurchaseController,
     required String wrapperVersion,
-  }) {
-    return _hostApi.configure(
+  }) async {
+    final result = await _hostApi.configure(
       toConfigureRequest(
         apiKey: apiKey,
         wrapperVersion: wrapperVersion,
         usingPurchaseController: usingPurchaseController,
-        options: options ?? const NuxieOptions(),
+        options: options,
+        session: session,
       ),
     );
+    return NuxieVersions(
+      wrapper: wrapperVersion,
+      native: result.nativeVersion,
+      contract: result.contract,
+    );
   }
+
+  @override
+  Future<RestoreResult> restorePurchases() async =>
+      fromRestoreResult(await _hostApi.restorePurchases());
 
   @override
   Future<void> shutdown() => _hostApi.shutdown();
@@ -84,11 +96,7 @@ class NuxieFlutterNativePlatformImpl extends NuxieFlutterPlatform {
     Map<String, Object?>? userProperties,
     Map<String, Object?>? userPropertiesSetOnce,
   }) {
-    return _hostApi.identify(
-      distinctId,
-      userProperties,
-      userPropertiesSetOnce,
-    );
+    return _hostApi.identify(distinctId, userProperties, userPropertiesSetOnce);
   }
 
   @override
@@ -105,8 +113,8 @@ class NuxieFlutterNativePlatformImpl extends NuxieFlutterPlatform {
   Future<bool> getIsIdentified() => _hostApi.getIsIdentified();
 
   @override
-  void trigger(String event, {Map<String, Object?>? properties}) {
-    unawaited(_hostApi.trigger(event, properties));
+  Future<void> trigger(String event, {Map<String, Object?>? properties}) {
+    return _hostApi.trigger(event, properties);
   }
 
   @override
@@ -134,13 +142,13 @@ class NuxieFlutterNativePlatformImpl extends NuxieFlutterPlatform {
   }
 
   @override
-  void useFeature(
+  Future<void> useFeature(
     String featureId, {
     double amount = 1,
     String? entityId,
     Map<String, Object?>? metadata,
   }) {
-    unawaited(_hostApi.useFeature(featureId, amount, entityId, metadata));
+    return _hostApi.useFeature(featureId, amount, entityId, metadata);
   }
 
   @override
@@ -163,34 +171,40 @@ class NuxieFlutterNativePlatformImpl extends NuxieFlutterPlatform {
   }
 
   @override
-  void completePurchase(String requestId, NuxiePurchaseResult result) {
-    unawaited(_hostApi.completePurchase(requestId, toPurchaseResult(result)));
+  Future<void> completePurchase(String requestId, PurchaseResult result) {
+    return _hostApi.completePurchase(requestId, toPurchaseResult(result));
   }
 
   @override
-  void completeRestore(String requestId, NuxieRestoreResult result) {
-    unawaited(_hostApi.completeRestore(requestId, toRestoreResult(result)));
+  Future<void> completeRestore(String requestId, RestoreResult result) {
+    return _hostApi.completeRestore(requestId, toRestoreResult(result));
   }
 }
 
 class _NuxieFlutterCallbacks extends PNuxieFlutterApi {
   _NuxieFlutterCallbacks({
-    required this.onFeatureAccessChangedCallback,
+    required this.onFeatureSnapshotCallback,
+    required this.onFeatureError,
     required this.onActivityCallback,
     required this.onAppActionCallback,
     required this.onPurchaseRequestCallback,
     required this.onRestoreRequestCallback,
   });
 
-  final void Function(FeatureAccessChangedEvent) onFeatureAccessChangedCallback;
+  final void Function(NativeFeatureSnapshot) onFeatureSnapshotCallback;
+  final void Function(Object, StackTrace) onFeatureError;
   final void Function(NuxieActivityInfo) onActivityCallback;
-  final void Function(AppAction) onAppActionCallback;
+  final void Function(NuxieAppAction) onAppActionCallback;
   final void Function(NuxiePurchaseRequest) onPurchaseRequestCallback;
   final void Function(NuxieRestoreRequest) onRestoreRequestCallback;
 
   @override
-  void onFeatureAccessChanged(PFeatureAccessChangedEvent event) {
-    onFeatureAccessChangedCallback(fromFeatureAccessChangedEvent(event));
+  void onFeatureSnapshot(PFeatureSnapshot event) {
+    try {
+      onFeatureSnapshotCallback(fromFeatureSnapshot(event));
+    } catch (error, stack) {
+      onFeatureError(error, stack);
+    }
   }
 
   @override

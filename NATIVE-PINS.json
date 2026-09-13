@@ -1,0 +1,14 @@
+{
+  "wrapper": "0.2.0",
+  "contract": 2,
+  "distribution": "source-preview",
+  "pigeon": "26.3.4",
+  "ios": {
+    "repository": "https://github.com/nuxieai/nuxie-ios.git",
+    "revision": "1c6ca493d50b5df477d79ccf734951ed774e78d9"
+  },
+  "android": {
+    "repository": "https://github.com/nuxieai/nuxie-android.git",
+    "revision": "4144a858ed93ad757e1db7cb1e3f34ffc7bbd343"
+  }
+}

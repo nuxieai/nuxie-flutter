@@ -6,28 +6,37 @@ PConfigureRequest toConfigureRequest({
   required String apiKey,
   required String wrapperVersion,
   required bool usingPurchaseController,
-  required NuxieOptions options,
-}) {
-  return PConfigureRequest(
-    apiKey: apiKey,
-    wrapperVersion: wrapperVersion,
-    usingPurchaseController: usingPurchaseController,
-    environment: options.environment.name,
-    logLevel: options.logLevel?.name,
-    enableConsoleLogging: options.enableConsoleLogging,
-    redactSensitiveData: options.redactSensitiveData,
-    localeIdentifier: options.localeIdentifier,
-    purchaseHandlingMode: options.purchaseHandlingMode?.name,
-    testStoreEnabled: options.testStoreEnabled,
-  );
+  required NuxieConfiguration options,
+  required String session,
+}) => PConfigureRequest(
+  session: session,
+  apiKey: apiKey,
+  wrapperVersion: wrapperVersion,
+  usingPurchaseController: usingPurchaseController,
+  environment: options.environment.name,
+  logLevel: options.logLevel.name,
+  localeIdentifier: options.localeIdentifier,
+  purchaseHandlingMode: options.billing is NativeBilling
+      ? (options.billing as NativeBilling).handling.name
+      : 'full',
+);
+
+T requiredField<T>(T? value, String name) {
+  if (value == null) {
+    throw NuxieException(
+      code: 'incompatibleNativeContract',
+      message: 'Native response omitted $name.',
+    );
+  }
+  return value;
 }
 
 FeatureAccess fromFeatureAccess(PFeatureAccess value) {
   return FeatureAccess(
-    allowed: value.allowed ?? false,
-    unlimited: value.unlimited ?? false,
+    allowed: requiredField(value.allowed, 'allowed'),
+    unlimited: requiredField(value.unlimited, 'unlimited'),
     balance: value.balance,
-    type: FeatureType.values.byName(value.type ?? FeatureType.boolean.name),
+    type: FeatureType.values.byName(requiredField(value.type, 'type')),
   );
 }
 
@@ -40,9 +49,9 @@ FeatureUsageResult fromFeatureUsageResult(PFeatureUsageResult value) {
           remaining: value.usageRemaining,
         );
   return FeatureUsageResult(
-    success: value.success ?? false,
-    featureId: value.featureId ?? '',
-    amountUsed: value.amountUsed ?? 0,
+    success: requiredField(value.success, 'success'),
+    featureId: requiredField(value.featureId, 'featureId'),
+    amountUsed: requiredField(value.amountUsed, 'amountUsed'),
     message: value.message,
     usage: usage,
     authoritativeAccess: value.authoritativeAccess == null
@@ -51,42 +60,56 @@ FeatureUsageResult fromFeatureUsageResult(PFeatureUsageResult value) {
   );
 }
 
-FeatureAccessChangedEvent fromFeatureAccessChangedEvent(
-  PFeatureAccessChangedEvent value,
-) {
-  final next = value.to;
-  if (next == null) {
-    throw StateError('feature access change omitted its new value');
-  }
-  return FeatureAccessChangedEvent(
-    featureId: value.featureId ?? '',
-    from: value.from == null ? null : fromFeatureAccess(value.from!),
-    to: fromFeatureAccess(next),
-    timestampMs: value.timestampMs ?? 0,
-  );
-}
+NativeFeatureSnapshot fromFeatureSnapshot(PFeatureSnapshot value) =>
+    NativeFeatureSnapshot(
+      session: requiredField(value.session, 'session'),
+      identityGeneration: requiredField(
+        value.identityGeneration,
+        'identityGeneration',
+      ),
+      revision: requiredField(value.revision, 'revision'),
+      value: NuxieFeatureSnapshot(
+        state: FeatureState.values.byName(requiredField(value.state, 'state')),
+        all: requiredField(value.all, 'all').map(
+          (key, access) => MapEntry(
+            requiredField(key, 'featureId'),
+            fromFeatureAccess(requiredField(access, 'access')),
+          ),
+        ),
+      ),
+    );
+
+RestoreResult fromRestoreResult(PRestoreResult value) => switch (value.type) {
+  'restored' => const RestoreResult.restored(),
+  'no_purchases' => const RestoreResult.noPurchases(),
+  'failed' => RestoreResult.failed(value.message ?? 'restoreFailed'),
+  _ => throw const NuxieException(
+    code: 'incompatibleNativeContract',
+    message: 'Unknown restore result.',
+  ),
+};
 
 NuxieActivityInfo fromActivityInfo(PActivityInfo value) {
   return NuxieActivityInfo(
-    schemaVersion: value.schemaVersion ?? 1,
-    id: value.id ?? '',
-    timestampMs: value.timestampMs ?? 0,
-    receivedAtMs: value.receivedAtMs ?? 0,
-    name: value.name ?? '',
+    schemaVersion: requiredField(value.schemaVersion, 'schemaVersion'),
+    id: requiredField(value.id, 'id'),
+    timestampMs: requiredField(value.timestampMs, 'timestampMs'),
+    receivedAtMs: requiredField(value.receivedAtMs, 'receivedAtMs'),
+    name: requiredField(value.name, 'name'),
     properties: _scalarMap(value.properties),
   );
 }
 
-AppAction fromAppAction(PAppAction value) {
+NuxieAppAction fromAppAction(PAppAction value) {
   final experience = value.experience;
   if (experience == null) {
     throw StateError('App Action omitted its Experience reference');
   }
-  return AppAction(
-    name: value.name ?? '',
+  return NuxieAppAction(
+    name: requiredField(value.name, 'name'),
     payload: value.payload == null ? null : _scalarMap(value.payload),
     experience: ExperienceRef(
-      experienceId: experience.experienceId ?? '',
+      experienceId: requiredField(experience.experienceId, 'experienceId'),
       experienceVersion: experience.experienceVersion,
       journeyId: experience.journeyId,
     ),
@@ -95,41 +118,47 @@ AppAction fromAppAction(PAppAction value) {
 
 NuxiePurchaseRequest fromPurchaseRequest(PPurchaseRequest value) {
   return NuxiePurchaseRequest(
-    requestId: value.requestId ?? '',
-    platform: value.platform ?? '',
-    productId: value.productId ?? '',
-    storeProductId: value.storeProductId ?? '',
+    requestId: requiredField(value.requestId, 'requestId'),
+    platform: requiredField(value.platform, 'platform'),
+    productId: requiredField(value.productId, 'productId'),
+    storeProductId: requiredField(value.storeProductId, 'storeProductId'),
     basePlanId: value.basePlanId,
     purchaseOptionId: value.purchaseOptionId,
     offerId: value.offerId,
     placementId: value.placementId,
     displayName: value.displayName,
+    description: value.description,
+    productType: value.productType,
+    period: value.period,
+    periodCount: value.periodCount,
+    introductoryTerms: value.introductoryTerms == null
+        ? null
+        : fromIntroductoryTerms(value.introductoryTerms!),
     displayPrice: value.displayPrice,
-    timestampMs: value.timestampMs ?? 0,
+    eligibilityJws: value.eligibilityJws,
+    billingPlan: value.billingPlan,
+    timestampMs: requiredField(value.timestampMs, 'timestampMs'),
   );
 }
 
 NuxieRestoreRequest fromRestoreRequest(PRestoreRequest value) {
   return NuxieRestoreRequest(
-    requestId: value.requestId ?? '',
-    platform: value.platform ?? '',
-    timestampMs: value.timestampMs ?? 0,
+    requestId: requiredField(value.requestId, 'requestId'),
+    platform: requiredField(value.platform, 'platform'),
+    timestampMs: requiredField(value.timestampMs, 'timestampMs'),
   );
 }
 
-PPurchaseResult toPurchaseResult(NuxiePurchaseResult value) {
-  return PPurchaseResult(
-    type: value.type.name,
-    message: value.message,
-  );
+PPurchaseResult toPurchaseResult(PurchaseResult value) {
+  return PPurchaseResult(type: value.type.name, message: value.message);
 }
 
-PRestoreResult toRestoreResult(NuxieRestoreResult value) {
+PRestoreResult toRestoreResult(RestoreResult value) {
   return PRestoreResult(
     type: switch (value.type) {
-      NuxieRestoreResultType.restored => 'restored',
-      NuxieRestoreResultType.noPurchases => 'no_purchases',
-      NuxieRestoreResultType.failed => 'failed',
+      RestoreResultType.restored => 'restored',
+      RestoreResultType.noPurchases => 'no_purchases',
+      RestoreResultType.failed => 'failed',
     },
     message: value.message,
   );
@@ -146,3 +175,22 @@ Map<String, Object> _scalarMap(Map<String?, Object?>? values) {
   }
   return result;
 }
+
+NuxieIntroductoryTerms fromIntroductoryTerms(PIntroductoryTerms value) =>
+    NuxieIntroductoryTerms(
+      price: requiredField(value.price, 'introductoryTerms.price'),
+      period: requiredField(value.period, 'introductoryTerms.period'),
+      periodCount: requiredField(
+        value.periodCount,
+        'introductoryTerms.periodCount',
+      ),
+      cycles: requiredField(value.cycles, 'introductoryTerms.cycles'),
+      paymentMode: requiredField(
+        value.paymentMode,
+        'introductoryTerms.paymentMode',
+      ),
+      displayDuration: requiredField(
+        value.displayDuration,
+        'introductoryTerms.displayDuration',
+      ),
+    );

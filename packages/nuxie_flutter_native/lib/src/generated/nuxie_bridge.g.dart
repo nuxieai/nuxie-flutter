@@ -10,9 +10,9 @@ import 'package:flutter/services.dart';
 import 'package:meta/meta.dart' show immutable, protected, visibleForTesting;
 
 Object? _extractReplyValueOrThrow(
-  List<Object?>? replyList,
-  String channelName, {
-  required bool isNullValid,
+    List<Object?>? replyList,
+    String channelName, {
+    required bool isNullValid,
 }) {
   if (replyList == null) {
     throw PlatformException(
@@ -34,8 +34,8 @@ Object? _extractReplyValueOrThrow(
   return replyList.firstOrNull;
 }
 
-List<Object?> wrapResponse(
-    {Object? result, PlatformException? error, bool empty = false}) {
+
+List<Object?> wrapResponse({Object? result, PlatformException? error, bool empty = false}) {
   if (empty) {
     return <Object?>[];
   }
@@ -44,7 +44,6 @@ List<Object?> wrapResponse(
   }
   return <Object?>[error.code, error.message, error.details];
 }
-
 bool _deepEquals(Object? a, Object? b) {
   if (identical(a, b)) {
     return true;
@@ -107,19 +106,20 @@ int _deepHash(Object? value) {
   return value.hashCode;
 }
 
+
 class PConfigureRequest {
   PConfigureRequest({
+    this.session,
     this.apiKey,
     this.wrapperVersion,
     this.usingPurchaseController,
     this.environment,
     this.logLevel,
-    this.enableConsoleLogging,
-    this.redactSensitiveData,
     this.localeIdentifier,
     this.purchaseHandlingMode,
-    this.testStoreEnabled,
   });
+
+  String? session;
 
   String? apiKey;
 
@@ -131,48 +131,37 @@ class PConfigureRequest {
 
   String? logLevel;
 
-  bool? enableConsoleLogging;
-
-  bool? redactSensitiveData;
-
   String? localeIdentifier;
 
   String? purchaseHandlingMode;
 
-  bool? testStoreEnabled;
-
   List<Object?> _toList() {
     return <Object?>[
+      session,
       apiKey,
       wrapperVersion,
       usingPurchaseController,
       environment,
       logLevel,
-      enableConsoleLogging,
-      redactSensitiveData,
       localeIdentifier,
       purchaseHandlingMode,
-      testStoreEnabled,
     ];
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
   static PConfigureRequest decode(Object result) {
     result as List<Object?>;
     return PConfigureRequest(
-      apiKey: result[0] as String?,
-      wrapperVersion: result[1] as String?,
-      usingPurchaseController: result[2] as bool?,
-      environment: result[3] as String?,
-      logLevel: result[4] as String?,
-      enableConsoleLogging: result[5] as bool?,
-      redactSensitiveData: result[6] as bool?,
-      localeIdentifier: result[7] as String?,
-      purchaseHandlingMode: result[8] as String?,
-      testStoreEnabled: result[9] as bool?,
+      session: result[0] as String?,
+      apiKey: result[1] as String?,
+      wrapperVersion: result[2] as String?,
+      usingPurchaseController: result[3] as bool?,
+      environment: result[4] as String?,
+      logLevel: result[5] as String?,
+      localeIdentifier: result[6] as String?,
+      purchaseHandlingMode: result[7] as String?,
     );
   }
 
@@ -185,16 +174,7 @@ class PConfigureRequest {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(apiKey, other.apiKey) &&
-        _deepEquals(wrapperVersion, other.wrapperVersion) &&
-        _deepEquals(usingPurchaseController, other.usingPurchaseController) &&
-        _deepEquals(environment, other.environment) &&
-        _deepEquals(logLevel, other.logLevel) &&
-        _deepEquals(enableConsoleLogging, other.enableConsoleLogging) &&
-        _deepEquals(redactSensitiveData, other.redactSensitiveData) &&
-        _deepEquals(localeIdentifier, other.localeIdentifier) &&
-        _deepEquals(purchaseHandlingMode, other.purchaseHandlingMode) &&
-        _deepEquals(testStoreEnabled, other.testStoreEnabled);
+    return _deepEquals(session, other.session) && _deepEquals(apiKey, other.apiKey) && _deepEquals(wrapperVersion, other.wrapperVersion) && _deepEquals(usingPurchaseController, other.usingPurchaseController) && _deepEquals(environment, other.environment) && _deepEquals(logLevel, other.logLevel) && _deepEquals(localeIdentifier, other.localeIdentifier) && _deepEquals(purchaseHandlingMode, other.purchaseHandlingMode);
   }
 
   @override
@@ -228,8 +208,7 @@ class PFeatureAccess {
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
   static PFeatureAccess decode(Object result) {
     result as List<Object?>;
@@ -250,10 +229,7 @@ class PFeatureAccess {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(allowed, other.allowed) &&
-        _deepEquals(unlimited, other.unlimited) &&
-        _deepEquals(balance, other.balance) &&
-        _deepEquals(type, other.type);
+    return _deepEquals(allowed, other.allowed) && _deepEquals(unlimited, other.unlimited) && _deepEquals(balance, other.balance) && _deepEquals(type, other.type);
   }
 
   @override
@@ -303,8 +279,7 @@ class PFeatureUsageResult {
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
   static PFeatureUsageResult decode(Object result) {
     result as List<Object?>;
@@ -329,14 +304,7 @@ class PFeatureUsageResult {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(success, other.success) &&
-        _deepEquals(featureId, other.featureId) &&
-        _deepEquals(amountUsed, other.amountUsed) &&
-        _deepEquals(message, other.message) &&
-        _deepEquals(usageCurrent, other.usageCurrent) &&
-        _deepEquals(usageLimit, other.usageLimit) &&
-        _deepEquals(usageRemaining, other.usageRemaining) &&
-        _deepEquals(authoritativeAccess, other.authoritativeAccess);
+    return _deepEquals(success, other.success) && _deepEquals(featureId, other.featureId) && _deepEquals(amountUsed, other.amountUsed) && _deepEquals(message, other.message) && _deepEquals(usageCurrent, other.usageCurrent) && _deepEquals(usageLimit, other.usageLimit) && _deepEquals(usageRemaining, other.usageRemaining) && _deepEquals(authoritativeAccess, other.authoritativeAccess);
   }
 
   @override
@@ -344,59 +312,104 @@ class PFeatureUsageResult {
   int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
 }
 
-class PFeatureAccessChangedEvent {
-  PFeatureAccessChangedEvent({
-    this.featureId,
-    this.from,
-    this.to,
-    this.timestampMs,
+class PFeatureSnapshot {
+  PFeatureSnapshot({
+    this.session,
+    this.identityGeneration,
+    this.revision,
+    this.state,
+    this.all,
   });
 
-  String? featureId;
+  String? session;
 
-  PFeatureAccess? from;
+  int? identityGeneration;
 
-  PFeatureAccess? to;
+  int? revision;
 
-  int? timestampMs;
+  String? state;
+
+  Map<String?, PFeatureAccess?>? all;
 
   List<Object?> _toList() {
     return <Object?>[
-      featureId,
-      from,
-      to,
-      timestampMs,
+      session,
+      identityGeneration,
+      revision,
+      state,
+      all,
     ];
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
-  static PFeatureAccessChangedEvent decode(Object result) {
+  static PFeatureSnapshot decode(Object result) {
     result as List<Object?>;
-    return PFeatureAccessChangedEvent(
-      featureId: result[0] as String?,
-      from: result[1] as PFeatureAccess?,
-      to: result[2] as PFeatureAccess?,
-      timestampMs: result[3] as int?,
+    return PFeatureSnapshot(
+      session: result[0] as String?,
+      identityGeneration: result[1] as int?,
+      revision: result[2] as int?,
+      state: result[3] as String?,
+      all: (result[4] as Map<Object?, Object?>?)?.cast<String?, PFeatureAccess?>(),
     );
   }
 
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
   bool operator ==(Object other) {
-    if (other is! PFeatureAccessChangedEvent ||
-        other.runtimeType != runtimeType) {
+    if (other is! PFeatureSnapshot || other.runtimeType != runtimeType) {
       return false;
     }
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(featureId, other.featureId) &&
-        _deepEquals(from, other.from) &&
-        _deepEquals(to, other.to) &&
-        _deepEquals(timestampMs, other.timestampMs);
+    return _deepEquals(session, other.session) && _deepEquals(identityGeneration, other.identityGeneration) && _deepEquals(revision, other.revision) && _deepEquals(state, other.state) && _deepEquals(all, other.all);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+}
+
+class PVersions {
+  PVersions({
+    this.nativeVersion,
+    this.contract,
+  });
+
+  String? nativeVersion;
+
+  int? contract;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      nativeVersion,
+      contract,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static PVersions decode(Object result) {
+    result as List<Object?>;
+    return PVersions(
+      nativeVersion: result[0] as String?,
+      contract: result[1] as int?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! PVersions || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(nativeVersion, other.nativeVersion) && _deepEquals(contract, other.contract);
   }
 
   @override
@@ -426,8 +439,7 @@ class PExperienceRef {
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
   static PExperienceRef decode(Object result) {
     result as List<Object?>;
@@ -447,9 +459,7 @@ class PExperienceRef {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(experienceId, other.experienceId) &&
-        _deepEquals(experienceVersion, other.experienceVersion) &&
-        _deepEquals(journeyId, other.journeyId);
+    return _deepEquals(experienceId, other.experienceId) && _deepEquals(experienceVersion, other.experienceVersion) && _deepEquals(journeyId, other.journeyId);
   }
 
   @override
@@ -479,8 +489,7 @@ class PAppAction {
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
   static PAppAction decode(Object result) {
     result as List<Object?>;
@@ -500,9 +509,7 @@ class PAppAction {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(name, other.name) &&
-        _deepEquals(payload, other.payload) &&
-        _deepEquals(experience, other.experience);
+    return _deepEquals(name, other.name) && _deepEquals(payload, other.payload) && _deepEquals(experience, other.experience);
   }
 
   @override
@@ -544,8 +551,7 @@ class PActivityInfo {
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
   static PActivityInfo decode(Object result) {
     result as List<Object?>;
@@ -555,8 +561,7 @@ class PActivityInfo {
       timestampMs: result[2] as int?,
       receivedAtMs: result[3] as int?,
       name: result[4] as String?,
-      properties:
-          (result[5] as Map<Object?, Object?>?)?.cast<String?, Object?>(),
+      properties: (result[5] as Map<Object?, Object?>?)?.cast<String?, Object?>(),
     );
   }
 
@@ -569,12 +574,7 @@ class PActivityInfo {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(schemaVersion, other.schemaVersion) &&
-        _deepEquals(id, other.id) &&
-        _deepEquals(timestampMs, other.timestampMs) &&
-        _deepEquals(receivedAtMs, other.receivedAtMs) &&
-        _deepEquals(name, other.name) &&
-        _deepEquals(properties, other.properties);
+    return _deepEquals(schemaVersion, other.schemaVersion) && _deepEquals(id, other.id) && _deepEquals(timestampMs, other.timestampMs) && _deepEquals(receivedAtMs, other.receivedAtMs) && _deepEquals(name, other.name) && _deepEquals(properties, other.properties);
   }
 
   @override
@@ -593,7 +593,14 @@ class PPurchaseRequest {
     this.offerId,
     this.placementId,
     this.displayName,
+    this.description,
+    this.productType,
+    this.period,
+    this.periodCount,
+    this.introductoryTerms,
     this.displayPrice,
+    this.eligibilityJws,
+    this.billingPlan,
     this.timestampMs,
   });
 
@@ -615,7 +622,21 @@ class PPurchaseRequest {
 
   String? displayName;
 
+  String? description;
+
+  String? productType;
+
+  String? period;
+
+  int? periodCount;
+
+  PIntroductoryTerms? introductoryTerms;
+
   String? displayPrice;
+
+  String? eligibilityJws;
+
+  String? billingPlan;
 
   int? timestampMs;
 
@@ -630,14 +651,20 @@ class PPurchaseRequest {
       offerId,
       placementId,
       displayName,
+      description,
+      productType,
+      period,
+      periodCount,
+      introductoryTerms,
       displayPrice,
+      eligibilityJws,
+      billingPlan,
       timestampMs,
     ];
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
   static PPurchaseRequest decode(Object result) {
     result as List<Object?>;
@@ -651,8 +678,15 @@ class PPurchaseRequest {
       offerId: result[6] as String?,
       placementId: result[7] as String?,
       displayName: result[8] as String?,
-      displayPrice: result[9] as String?,
-      timestampMs: result[10] as int?,
+      description: result[9] as String?,
+      productType: result[10] as String?,
+      period: result[11] as String?,
+      periodCount: result[12] as int?,
+      introductoryTerms: result[13] as PIntroductoryTerms?,
+      displayPrice: result[14] as String?,
+      eligibilityJws: result[15] as String?,
+      billingPlan: result[16] as String?,
+      timestampMs: result[17] as int?,
     );
   }
 
@@ -665,17 +699,7 @@ class PPurchaseRequest {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(requestId, other.requestId) &&
-        _deepEquals(platform, other.platform) &&
-        _deepEquals(productId, other.productId) &&
-        _deepEquals(storeProductId, other.storeProductId) &&
-        _deepEquals(basePlanId, other.basePlanId) &&
-        _deepEquals(purchaseOptionId, other.purchaseOptionId) &&
-        _deepEquals(offerId, other.offerId) &&
-        _deepEquals(placementId, other.placementId) &&
-        _deepEquals(displayName, other.displayName) &&
-        _deepEquals(displayPrice, other.displayPrice) &&
-        _deepEquals(timestampMs, other.timestampMs);
+    return _deepEquals(requestId, other.requestId) && _deepEquals(platform, other.platform) && _deepEquals(productId, other.productId) && _deepEquals(storeProductId, other.storeProductId) && _deepEquals(basePlanId, other.basePlanId) && _deepEquals(purchaseOptionId, other.purchaseOptionId) && _deepEquals(offerId, other.offerId) && _deepEquals(placementId, other.placementId) && _deepEquals(displayName, other.displayName) && _deepEquals(description, other.description) && _deepEquals(productType, other.productType) && _deepEquals(period, other.period) && _deepEquals(periodCount, other.periodCount) && _deepEquals(introductoryTerms, other.introductoryTerms) && _deepEquals(displayPrice, other.displayPrice) && _deepEquals(eligibilityJws, other.eligibilityJws) && _deepEquals(billingPlan, other.billingPlan) && _deepEquals(timestampMs, other.timestampMs);
   }
 
   @override
@@ -705,8 +729,7 @@ class PRestoreRequest {
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
   static PRestoreRequest decode(Object result) {
     result as List<Object?>;
@@ -726,9 +749,7 @@ class PRestoreRequest {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(requestId, other.requestId) &&
-        _deepEquals(platform, other.platform) &&
-        _deepEquals(timestampMs, other.timestampMs);
+    return _deepEquals(requestId, other.requestId) && _deepEquals(platform, other.platform) && _deepEquals(timestampMs, other.timestampMs);
   }
 
   @override
@@ -754,8 +775,7 @@ class PPurchaseResult {
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
   static PPurchaseResult decode(Object result) {
     result as List<Object?>;
@@ -800,8 +820,7 @@ class PRestoreResult {
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
   static PRestoreResult decode(Object result) {
     result as List<Object?>;
@@ -828,6 +847,72 @@ class PRestoreResult {
   int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
 }
 
+class PIntroductoryTerms {
+  PIntroductoryTerms({
+    this.price,
+    this.period,
+    this.periodCount,
+    this.cycles,
+    this.paymentMode,
+    this.displayDuration,
+  });
+
+  String? price;
+
+  String? period;
+
+  int? periodCount;
+
+  int? cycles;
+
+  String? paymentMode;
+
+  String? displayDuration;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      price,
+      period,
+      periodCount,
+      cycles,
+      paymentMode,
+      displayDuration,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static PIntroductoryTerms decode(Object result) {
+    result as List<Object?>;
+    return PIntroductoryTerms(
+      price: result[0] as String?,
+      period: result[1] as String?,
+      periodCount: result[2] as int?,
+      cycles: result[3] as int?,
+      paymentMode: result[4] as String?,
+      displayDuration: result[5] as String?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! PIntroductoryTerms || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(price, other.price) && _deepEquals(period, other.period) && _deepEquals(periodCount, other.periodCount) && _deepEquals(cycles, other.cycles) && _deepEquals(paymentMode, other.paymentMode) && _deepEquals(displayDuration, other.displayDuration);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+}
+
+
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -835,38 +920,44 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
-    } else if (value is PConfigureRequest) {
+    }    else if (value is PConfigureRequest) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    } else if (value is PFeatureAccess) {
+    }    else if (value is PFeatureAccess) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    } else if (value is PFeatureUsageResult) {
+    }    else if (value is PFeatureUsageResult) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
-    } else if (value is PFeatureAccessChangedEvent) {
+    }    else if (value is PFeatureSnapshot) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
-    } else if (value is PExperienceRef) {
+    }    else if (value is PVersions) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    } else if (value is PAppAction) {
+    }    else if (value is PExperienceRef) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
-    } else if (value is PActivityInfo) {
+    }    else if (value is PAppAction) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
-    } else if (value is PPurchaseRequest) {
+    }    else if (value is PActivityInfo) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
-    } else if (value is PRestoreRequest) {
+    }    else if (value is PPurchaseRequest) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    } else if (value is PPurchaseResult) {
+    }    else if (value is PRestoreRequest) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    } else if (value is PRestoreResult) {
+    }    else if (value is PPurchaseResult) {
       buffer.putUint8(139);
+      writeValue(buffer, value.encode());
+    }    else if (value is PRestoreResult) {
+      buffer.putUint8(140);
+      writeValue(buffer, value.encode());
+    }    else if (value is PIntroductoryTerms) {
+      buffer.putUint8(141);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -883,21 +974,25 @@ class _PigeonCodec extends StandardMessageCodec {
       case 131:
         return PFeatureUsageResult.decode(readValue(buffer)!);
       case 132:
-        return PFeatureAccessChangedEvent.decode(readValue(buffer)!);
+        return PFeatureSnapshot.decode(readValue(buffer)!);
       case 133:
-        return PExperienceRef.decode(readValue(buffer)!);
+        return PVersions.decode(readValue(buffer)!);
       case 134:
-        return PAppAction.decode(readValue(buffer)!);
+        return PExperienceRef.decode(readValue(buffer)!);
       case 135:
-        return PActivityInfo.decode(readValue(buffer)!);
+        return PAppAction.decode(readValue(buffer)!);
       case 136:
-        return PPurchaseRequest.decode(readValue(buffer)!);
+        return PActivityInfo.decode(readValue(buffer)!);
       case 137:
-        return PRestoreRequest.decode(readValue(buffer)!);
+        return PPurchaseRequest.decode(readValue(buffer)!);
       case 138:
-        return PPurchaseResult.decode(readValue(buffer)!);
+        return PRestoreRequest.decode(readValue(buffer)!);
       case 139:
+        return PPurchaseResult.decode(readValue(buffer)!);
+      case 140:
         return PRestoreResult.decode(readValue(buffer)!);
+      case 141:
+        return PIntroductoryTerms.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -908,98 +1003,36 @@ class PNuxieHostApi {
   /// Constructor for [PNuxieHostApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  PNuxieHostApi(
-      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  PNuxieHostApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix =
-            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
 
   final String pigeonVar_messageChannelSuffix;
 
-  Future<void> configure(PConfigureRequest request) async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.configure$pigeonVar_messageChannelSuffix';
+  Future<PVersions> configure(PConfigureRequest request) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.configure$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[request]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[request]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
-    _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: true,
-    );
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return pigeonVar_replyValue! as PVersions;
   }
 
-  Future<void> shutdown() async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.shutdown$pigeonVar_messageChannelSuffix';
-    final pigeonVar_channel = BasicMessageChannel<Object?>(
-      pigeonVar_channelName,
-      pigeonChannelCodec,
-      binaryMessenger: pigeonVar_binaryMessenger,
-    );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
-    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
-
-    _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: true,
-    );
-  }
-
-  Future<void> identify(
-      String distinctId,
-      Map<String?, Object?>? userProperties,
-      Map<String?, Object?>? userPropertiesSetOnce) async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.identify$pigeonVar_messageChannelSuffix';
-    final pigeonVar_channel = BasicMessageChannel<Object?>(
-      pigeonVar_channelName,
-      pigeonChannelCodec,
-      binaryMessenger: pigeonVar_binaryMessenger,
-    );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel
-        .send(<Object?>[distinctId, userProperties, userPropertiesSetOnce]);
-    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
-
-    _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: true,
-    );
-  }
-
-  Future<void> reset(bool keepAnonymousId) async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.reset$pigeonVar_messageChannelSuffix';
-    final pigeonVar_channel = BasicMessageChannel<Object?>(
-      pigeonVar_channelName,
-      pigeonChannelCodec,
-      binaryMessenger: pigeonVar_binaryMessenger,
-    );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[keepAnonymousId]);
-    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
-
-    _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: true,
-    );
-  }
-
-  Future<String> getDistinctId() async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.getDistinctId$pigeonVar_messageChannelSuffix';
+  Future<PRestoreResult> restorePurchases() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.restorePurchases$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -1009,16 +1042,89 @@ class PNuxieHostApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-      pigeonVar_replyList,
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return pigeonVar_replyValue! as PRestoreResult;
+  }
+
+  Future<void> shutdown() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.shutdown$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
-      isNullValid: false,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
     );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
+  }
+
+  Future<void> identify(String distinctId, Map<String?, Object?>? userProperties, Map<String?, Object?>? userPropertiesSetOnce) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.identify$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[distinctId, userProperties, userPropertiesSetOnce]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
+  }
+
+  Future<void> reset(bool keepAnonymousId) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.reset$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[keepAnonymousId]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
+  }
+
+  Future<String> getDistinctId() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.getDistinctId$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
     return pigeonVar_replyValue! as String;
   }
 
   Future<String> getAnonymousId() async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.getAnonymousId$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName = 'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.getAnonymousId$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -1028,16 +1134,16 @@ class PNuxieHostApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: false,
-    );
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
     return pigeonVar_replyValue! as String;
   }
 
   Future<bool> getIsIdentified() async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.getIsIdentified$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName = 'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.getIsIdentified$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -1047,35 +1153,34 @@ class PNuxieHostApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: false,
-    );
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
     return pigeonVar_replyValue! as bool;
   }
 
   Future<void> trigger(String event, Map<String?, Object?>? properties) async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.trigger$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName = 'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.trigger$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[event, properties]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[event, properties]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: true,
-    );
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
   }
 
   Future<void> dismiss() async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.dismiss$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName = 'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.dismiss$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -1085,137 +1190,128 @@ class PNuxieHostApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: true,
-    );
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
   }
 
   Future<void> setLocaleIdentifier(String? localeIdentifier) async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.setLocaleIdentifier$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName = 'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.setLocaleIdentifier$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[localeIdentifier]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[localeIdentifier]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: true,
-    );
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
   }
 
-  Future<PFeatureAccess> hasFeature(String featureId, double requiredBalance,
-      String? entityId, String policy) async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.hasFeature$pigeonVar_messageChannelSuffix';
+  Future<PFeatureAccess> hasFeature(String featureId, double requiredBalance, String? entityId, String policy) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.hasFeature$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel
-        .send(<Object?>[featureId, requiredBalance, entityId, policy]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[featureId, requiredBalance, entityId, policy]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: false,
-    );
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
     return pigeonVar_replyValue! as PFeatureAccess;
   }
 
-  Future<void> useFeature(String featureId, double amount, String? entityId,
-      Map<String?, Object?>? metadata) async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.useFeature$pigeonVar_messageChannelSuffix';
+  Future<void> useFeature(String featureId, double amount, String? entityId, Map<String?, Object?>? metadata) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.useFeature$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel
-        .send(<Object?>[featureId, amount, entityId, metadata]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[featureId, amount, entityId, metadata]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: true,
-    );
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
   }
 
-  Future<PFeatureUsageResult> useFeatureAndWait(String featureId, double amount,
-      String? entityId, bool setUsage, Map<String?, Object?>? metadata) async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.useFeatureAndWait$pigeonVar_messageChannelSuffix';
+  Future<PFeatureUsageResult> useFeatureAndWait(String featureId, double amount, String? entityId, bool setUsage, Map<String?, Object?>? metadata) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.useFeatureAndWait$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel
-        .send(<Object?>[featureId, amount, entityId, setUsage, metadata]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[featureId, amount, entityId, setUsage, metadata]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: false,
-    );
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
     return pigeonVar_replyValue! as PFeatureUsageResult;
   }
 
-  Future<void> completePurchase(
-      String requestId, PPurchaseResult result) async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.completePurchase$pigeonVar_messageChannelSuffix';
+  Future<void> completePurchase(String requestId, PPurchaseResult result) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.completePurchase$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[requestId, result]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[requestId, result]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: true,
-    );
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
   }
 
   Future<void> completeRestore(String requestId, PRestoreResult result) async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.completeRestore$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName = 'dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.completeRestore$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[requestId, result]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[requestId, result]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: true,
-    );
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
   }
 }
 
 abstract class PNuxieFlutterApi {
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
 
-  void onFeatureAccessChanged(PFeatureAccessChangedEvent event);
+  void onFeatureSnapshot(PFeatureSnapshot snapshot);
 
   void onActivity(PActivityInfo activity);
 
@@ -1225,41 +1321,32 @@ abstract class PNuxieFlutterApi {
 
   void onRestoreRequest(PRestoreRequest request);
 
-  static void setUp(
-    PNuxieFlutterApi? api, {
-    BinaryMessenger? binaryMessenger,
-    String messageChannelSuffix = '',
-  }) {
-    messageChannelSuffix =
-        messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+  static void setUp(PNuxieFlutterApi? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
+    messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
     {
       final pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nuxie_flutter_native.PNuxieFlutterApi.onFeatureAccessChanged$messageChannelSuffix',
-          pigeonChannelCodec,
+          'dev.flutter.pigeon.nuxie_flutter_native.PNuxieFlutterApi.onFeatureSnapshot$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           final List<Object?> args = message! as List<Object?>;
-          final PFeatureAccessChangedEvent arg_event =
-              args[0]! as PFeatureAccessChangedEvent;
+          final PFeatureSnapshot arg_snapshot = args[0]! as PFeatureSnapshot;
           try {
-            api.onFeatureAccessChanged(arg_event);
+            api.onFeatureSnapshot(arg_snapshot);
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
       final pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nuxie_flutter_native.PNuxieFlutterApi.onActivity$messageChannelSuffix',
-          pigeonChannelCodec,
+          'dev.flutter.pigeon.nuxie_flutter_native.PNuxieFlutterApi.onActivity$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
@@ -1272,17 +1359,15 @@ abstract class PNuxieFlutterApi {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
       final pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nuxie_flutter_native.PNuxieFlutterApi.onAppAction$messageChannelSuffix',
-          pigeonChannelCodec,
+          'dev.flutter.pigeon.nuxie_flutter_native.PNuxieFlutterApi.onAppAction$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
@@ -1295,17 +1380,15 @@ abstract class PNuxieFlutterApi {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
       final pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nuxie_flutter_native.PNuxieFlutterApi.onPurchaseRequest$messageChannelSuffix',
-          pigeonChannelCodec,
+          'dev.flutter.pigeon.nuxie_flutter_native.PNuxieFlutterApi.onPurchaseRequest$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
@@ -1318,17 +1401,15 @@ abstract class PNuxieFlutterApi {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
       final pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nuxie_flutter_native.PNuxieFlutterApi.onRestoreRequest$messageChannelSuffix',
-          pigeonChannelCodec,
+          'dev.flutter.pigeon.nuxie_flutter_native.PNuxieFlutterApi.onRestoreRequest$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
@@ -1341,9 +1422,8 @@ abstract class PNuxieFlutterApi {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }

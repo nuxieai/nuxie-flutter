@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 
 #if os(iOS)
 import Flutter
@@ -15,12 +16,14 @@ public final class NuxieFlutterNativePlugin: NSObject, FlutterPlugin, PNuxieHost
 
 #if canImport(Nuxie)
   private lazy var purchaseBridge = FlutterPurchaseDelegateBridge { [weak self] request in
-    guard let self else { return }
-    switch request {
-    case .purchase(let value):
-      self.flutterApi.onPurchaseRequest(request: value) { _ in }
-    case .restore(let value):
-      self.flutterApi.onRestoreRequest(request: value) { _ in }
+    Task { @MainActor [weak self] in
+      guard let self else { return }
+      switch request {
+      case .purchase(let value):
+        self.flutterApi.onPurchaseRequest(request: value) { _ in }
+      case .restore(let value):
+        self.flutterApi.onRestoreRequest(request: value) { _ in }
+      }
     }
   }
 
@@ -33,39 +36,99 @@ public final class NuxieFlutterNativePlugin: NSObject, FlutterPlugin, PNuxieHost
     super.init()
   }
 
+  deinit {
+    snapshotSubscription?.cancel()
+#if canImport(Nuxie)
+    purchaseBridge.cancelPending(reason: "engine_detached")
+#endif
+  }
+
   public static func register(with registrar: FlutterPluginRegistrar) {
     let plugin = NuxieFlutterNativePlugin(binaryMessenger: registrar.messenger())
     PNuxieHostApiSetup.setUp(binaryMessenger: registrar.messenger(), api: plugin)
   }
 
-  func configure(
-    request: PConfigureRequest,
-    completion: @escaping (Result<Void, Error>) -> Void
-  ) {
-#if canImport(Nuxie)
-    guard let apiKey = request.apiKey?.trimmingCharacters(in: .whitespacesAndNewlines),
-          !apiKey.isEmpty else {
-      completion(.failure(bridgeError("MISSING_API_KEY", "apiKey is required")))
-      return
-    }
+  private var snapshotSubscription: AnyCancellable?
+  private static var configurationKey: String?
+#if DEBUG && canImport(Nuxie)
+  /// Native test-host seam. The Dart API never accepts endpoint overrides.
+  public static var configureDevelopmentHost: ((NuxieConfiguration) -> Void)?
+#endif
+  private static weak var owner: NuxieFlutterNativePlugin?
 
+  func configure(request: PConfigureRequest, completion: @escaping (Result<PVersions, Error>) -> Void) {
+#if canImport(Nuxie)
     Task { @MainActor in
       do {
+        guard let apiKey = request.apiKey, !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              let session = request.session else {
+          throw bridgeError("invalidConfiguration", "API key and session are required")
+        }
+        if let owner = Self.owner, owner !== self {
+          throw bridgeError("engineAlreadyAttached", "Nuxie is owned by another Flutter engine")
+        }
+        let key = [apiKey, request.environment ?? "production", request.logLevel ?? "warning",
+          request.localeIdentifier ?? "", request.purchaseHandlingMode ?? "full",
+          String(request.usingPurchaseController ?? false)].joined(separator: "\u{0}")
+        if let previous = Self.configurationKey, previous != key {
+          throw bridgeError("alreadyConfigured", "Native configuration differs; shutdown first")
+        }
+        if NuxieSDK.shared.isSetup && Self.configurationKey == nil {
+          throw bridgeError("alreadyConfigured", "Native SDK was configured outside this bridge")
+        }
+        Self.owner = self
+        self.purchaseBridge.cancelPending(reason: "session_replaced")
+        self.snapshotSubscription?.cancel()
         let configuration = self.configuration(apiKey: apiKey, request: request)
+#if DEBUG
+        Self.configureDevelopmentHost?(configuration)
+#endif
         NuxieSDK.shared.delegate = self.delegateBridge
-        try NuxieSDK.shared.setup(with: configuration)
-        completion(.success(()))
+        if NuxieSDK.shared.isSetup {
+          try NuxieSDK.shared.setPurchaseDelegate(configuration.purchaseDelegate)
+        } else {
+          try NuxieSDK.shared.setup(with: configuration)
+        }
+        Self.configurationKey = key
+        self.snapshotSubscription = NuxieSDK.shared.features.$snapshot.sink { [weak self] value in
+          self?.flutterApi.onFeatureSnapshot(snapshot: PFeatureSnapshot(
+            session: session, identityGeneration: Int64(value.identityGeneration),
+            revision: Int64(value.revision), state: String(describing: value.state),
+            all: Dictionary(uniqueKeysWithValues: value.all.map { (Optional($0.key), Optional($0.value.pigeon)) })
+          )) { _ in }
+        }
+        completion(.success(PVersions(nativeVersion: NuxieSDK.shared.version, contract: 2)))
       } catch {
+        if !NuxieSDK.shared.isSetup { Self.owner = nil }
         completion(.failure(error))
       }
     }
 #else
-    completion(.failure(bridgeError("NATIVE_SDK_UNAVAILABLE", "Nuxie iOS SDK is not linked")))
+    completion(.failure(bridgeError("nativeUnavailable", "Nuxie iOS SDK is not linked")))
+#endif
+  }
+
+  func restorePurchases(completion: @escaping (Result<PRestoreResult, Error>) -> Void) {
+#if canImport(Nuxie)
+    Task { @MainActor in
+      let result = await NuxieSDK.shared.restorePurchases()
+      switch result {
+      case .restored: completion(.success(PRestoreResult(type: "restored")))
+      case .noPurchases: completion(.success(PRestoreResult(type: "no_purchases")))
+      case .failed: completion(.success(PRestoreResult(type: "failed", message: "restoreFailed")))
+      }
+    }
+#else
+    completion(.failure(bridgeError("nativeUnavailable", "Nuxie iOS SDK is not linked")))
 #endif
   }
 
   func shutdown(completion: @escaping (Result<Void, Error>) -> Void) {
 #if canImport(Nuxie)
+    snapshotSubscription?.cancel()
+    snapshotSubscription = nil
+    Self.configurationKey = nil
+    Self.owner = nil
     purchaseBridge.cancelPending(reason: "sdk_shutdown")
     Task {
       await NuxieSDK.shared.shutdown()
@@ -268,17 +331,8 @@ public final class NuxieFlutterNativePlugin: NSObject, FlutterPlugin, PNuxieHost
       default: .warning
       }
     }
-    if let enabled = request.enableConsoleLogging {
-      value.enableConsoleLogging = enabled
-    }
-    if let redact = request.redactSensitiveData {
-      value.redactSensitiveData = redact
-    }
     value.localeIdentifier = request.localeIdentifier
     value.purchaseHandlingMode = request.purchaseHandlingMode == "observer" ? .observer : .full
-    if let testStoreEnabled = request.testStoreEnabled {
-      value.testStoreEnabled = testStoreEnabled
-    }
     if request.usingPurchaseController == true {
       value.purchaseDelegate = purchaseBridge
     }
@@ -310,20 +364,6 @@ private final class FlutterNuxieDelegate: NuxieDelegate {
     self.flutterApi = flutterApi
   }
 
-  func featureAccessDidChange(
-    _ featureId: String,
-    from oldValue: FeatureAccess?,
-    to newValue: FeatureAccess
-  ) {
-    flutterApi.onFeatureAccessChanged(
-      event: PFeatureAccessChangedEvent(
-        featureId: featureId,
-        from: oldValue?.pigeon,
-        to: newValue.pigeon,
-        timestampMs: Int64(Date().timeIntervalSince1970 * 1_000)
-      )
-    ) { _ in }
-  }
 
   func nuxieDidEmit(_ info: NuxieActivityInfo) {
     flutterApi.onActivity(
@@ -418,7 +458,7 @@ private final class FlutterPurchaseDelegateBridge: NuxiePurchaseDelegate, @unche
   private var restores: [String: CheckedContinuation<RestoreResult, Never>] = [:]
 
   init(
-    timeoutSeconds: TimeInterval = 60,
+    timeoutSeconds: TimeInterval = 120,
     emit: @escaping (FlutterCommerceRequest) -> Void
   ) {
     self.timeoutSeconds = timeoutSeconds
@@ -437,7 +477,18 @@ private final class FlutterPurchaseDelegateBridge: NuxiePurchaseDelegate, @unche
       offerId: nil,
       placementId: product.placementId,
       displayName: product.name,
+      description: product.description,
+      productType: product.productType.rawValue,
+      period: product.period?.rawValue,
+      periodCount: product.periodCount.map(Int64.init),
+      introductoryTerms: product.introductoryTerms.map { terms in
+        PIntroductoryTerms(price: terms.price, period: terms.period.rawValue,
+          periodCount: Int64(terms.periodCount), cycles: Int64(terms.cycles),
+          paymentMode: terms.paymentMode.rawValue, displayDuration: terms.trialPeriodText)
+      },
       displayPrice: product.price,
+      eligibilityJws: product.introductoryOfferEligibilityJWS,
+      billingPlan: product.billingPlan.rawValue,
       timestampMs: Int64(Date().timeIntervalSince1970 * 1_000)
     )
     return await withCheckedContinuation { continuation in

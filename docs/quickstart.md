@@ -1,65 +1,14 @@
 # Quickstart
 
-## Configure
+Start with the [README](../README.md#your-first-integration). It walks through configuration, events, reactive Features, usage, and billing.
 
-```dart
-final nuxie = await Nuxie.initialize(
-  apiKey: 'NX_PROD_...',
-  options: const NuxieOptions(
-    environment: NuxieEnvironment.production,
-  ),
-);
-```
+For this source preview, first follow [native setup](native-setup.md). Use matching native sources; the old 0.1 artifacts do not implement this contract.
 
-## Identify
+1. Create an iOS App Platform and an Android App Platform in Nuxie. Copy each public key.
+2. Inject `NuxieClient` into your app. Subscribe to activities and App Actions before calling `configure`.
+3. Configure once with `NuxieConfiguration(apiKeys: NuxieApiKeys(...))`.
+4. Publish a Journey for the same app/environment with an event entry condition.
+5. Call `trigger` with that event. Observe native presentation and activity independently.
+6. Render access from `features`; use explicit queries for entity scope or remote authority.
 
-```dart
-await nuxie.identify(
-  'user_123',
-  userProperties: <String, Object?>{'plan': 'pro'},
-);
-```
-
-## Capture an event
-
-```dart
-nuxie.trigger(
-  'upgrade_tapped',
-  properties: <String, Object?>{'source': 'settings'},
-);
-```
-
-The call returns immediately. The native Journey runtime evaluates the event
-in its durable ordered lane.
-
-## Observe native output
-
-```dart
-nuxie.activities.listen((event) {
-  analytics.track(event.name, event.properties);
-});
-
-nuxie.appActions.listen((action) {
-  appActions.handle(action.name, action.payload);
-});
-```
-
-## Check and use a Feature
-
-```dart
-final access = await nuxie.hasFeature(
-  'ai_credits',
-  requiredBalance: 2.5,
-  policy: FeatureCheckPolicy.remote,
-);
-
-if (access.allowed) {
-  await nuxie.useFeatureAndWait('ai_credits', amount: 2.5);
-}
-```
-
-## Shut down
-
-```dart
-await nuxie.shutdown();
-```
+The [SDK Lab](../packages/nuxie_flutter/example) lets you exercise this sequence without writing a host app first.

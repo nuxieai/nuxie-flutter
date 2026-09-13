@@ -10,8 +10,12 @@ class ExperienceRef {
   final String? journeyId;
 }
 
-class AppAction {
-  const AppAction({required this.name, required this.experience, this.payload});
+class NuxieAppAction {
+  NuxieAppAction({
+    required this.name,
+    required this.experience,
+    Map<String, Object>? payload,
+  }) : payload = payload == null ? null : Map.unmodifiable(payload);
 
   final String name;
   final Map<String, Object>? payload;
@@ -19,14 +23,14 @@ class AppAction {
 }
 
 class NuxieActivityInfo {
-  const NuxieActivityInfo({
+  NuxieActivityInfo({
     required this.schemaVersion,
     required this.id,
     required this.timestampMs,
     required this.receivedAtMs,
     required this.name,
-    required this.properties,
-  });
+    required Map<String, Object> properties,
+  }) : properties = Map.unmodifiable(properties);
 
   final int schemaVersion;
   final String id;
@@ -34,4 +38,8 @@ class NuxieActivityInfo {
   final int receivedAtMs;
   final String name;
   final Map<String, Object> properties;
+  DateTime get timestamp =>
+      DateTime.fromMillisecondsSinceEpoch(timestampMs, isUtc: true);
+  DateTime get receivedAt =>
+      DateTime.fromMillisecondsSinceEpoch(receivedAtMs, isUtc: true);
 }

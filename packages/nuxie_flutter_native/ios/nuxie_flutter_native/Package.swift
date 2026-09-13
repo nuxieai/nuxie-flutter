@@ -1,5 +1,10 @@
 // swift-tools-version: 5.9
 import PackageDescription
+import Foundation
+
+let nativeDependency: Package.Dependency = ProcessInfo.processInfo.environment["NUXIE_IOS_SDK_PATH"].map {
+  .package(name: "nuxie-ios", path: $0)
+} ?? .package(url: "https://github.com/nuxieai/nuxie-ios.git", revision: "1c6ca493d50b5df477d79ccf734951ed774e78d9")
 
 let package = Package(
   name: "nuxie_flutter_native",
@@ -7,10 +12,10 @@ let package = Package(
     .iOS(.v15)
   ],
   products: [
-    .library(name: "nuxie_flutter_native", targets: ["nuxie_flutter_native"])
+    .library(name: "nuxie-flutter-native", targets: ["nuxie_flutter_native"])
   ],
   dependencies: [
-    .package(url: "https://github.com/nuxieai/nuxie-ios.git", exact: "0.1.0")
+    nativeDependency
   ],
   targets: [
     .target(

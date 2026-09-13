@@ -1,31 +1,46 @@
 # Native setup
 
+This 0.2 source preview requires matching native source changes for coherent Feature snapshots and public restore results. Old 0.1 native artifacts are incompatible. Package publication is disabled until native dependency qualification is complete.
+
+## Acquire the pinned sources
+
+From the Flutter repository root, run `python3 scripts/prepare-native.py`. This fetches and verifies both immutable revisions in `NATIVE-PINS.json`; it refuses to overwrite a modified checkout. The Android example resolves `.native/android` automatically. iOS resolves the pinned Git revision through SwiftPM.
+
 ## iOS
 
-The plugin podspec depends on `Nuxie` `0.1.0`, and its Swift package manifest
-uses the same exact release. Set iOS 15 or newer, then install pods normally:
+Use Flutter 3.41+, iOS 15+, Xcode with the matching iOS SDK, and Swift Package Manager. Enable SwiftPM in your application's pubspec:
 
-```bash
-cd ios
-pod install
+```yaml
+flutter:
+  config:
+    enable-swift-package-manager: true
 ```
 
-The Test Store option is intended only for development builds.
+The Flutter plugin exposes a Swift package; CocoaPods is not a supported integration path. The example includes Flutter's generated SwiftPM integration and UIScene host.
+
+For a local source checkout, set `NUXIE_IOS_SDK_PATH` to the matching nuxie-ios repository. Prepare that repository's runtime using its documented `make fetch-runtime-xcframework`, then build with `NUXIE_RUNTIME_USE_LOCAL=1`.
+
+```sh
+cd packages/nuxie_flutter/example
+NUXIE_IOS_SDK_PATH=/absolute/path/nuxie-ios NUXIE_RUNTIME_USE_LOCAL=1 \
+  flutter build ios --simulator --debug
+```
 
 ## Android
 
-The plugin depends on `ai.nuxie:nuxie-android:0.1.0`, requires API 23 or newer,
-and compiles with SDK 36. Ensure `google()` and `mavenCentral()` are available
-to dependency resolution.
+Use API 23+ devices, compile SDK 36, Java 17+ and the Android SDK. The example uses `FlutterFragmentActivity` so the native SDK can present Experiences. Set `ANDROID_HOME` if your SDK is not automatically discovered.
 
-## Generated channel
+For local native source validation, the example's Gradle settings substitute the native dependency with a composite build when `NUXIE_ANDROID_SDK_PATH` points to the matching repository:
 
-Edit only `packages/nuxie_flutter_native/pigeons/nuxie_bridge.dart`, then run:
-
-```bash
-cd packages/nuxie_flutter_native
-flutter pub get
-flutter pub run pigeon --input pigeons/nuxie_bridge.dart
+```sh
+cd packages/nuxie_flutter/example
+NUXIE_ANDROID_SDK_PATH=/absolute/path/nuxie-android flutter build apk --debug
 ```
 
-Commit the generated Dart, Swift, and Kotlin outputs with the source schema.
+Keep the example's AGP and Kotlin versions aligned with the native composite build. The `0.2.0-source` coordinate is deliberately substituted by the pinned source checkout; it is not a Maven release. For another host app, copy the example’s `includeBuild` dependency-substitution block into its settings and point it at the prepared Android checkout. Registry publication requires a qualified native artifact.
+
+## Local backend validation
+
+The SDK Lab uses the development environment. Its debug native hosts also support loopback-only endpoint overrides: iOS reads `NUXIE_LOCAL_INGEST_URL` from the process environment; Android reads the `nuxieLocalIngestUrl` launch intent extra. Android emulator host access uses `10.0.2.2`. These hooks are debug host configuration and are not public Dart configuration.
+
+Use public keys for apps created in that local backend. Publish a Journey for the app/environment before expecting a trigger to present anything. The production wrapper does not expose testing SPI or endpoint overrides.

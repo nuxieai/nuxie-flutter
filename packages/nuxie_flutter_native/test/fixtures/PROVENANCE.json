@@ -1,0 +1,26 @@
+{
+  "repository": "https://github.com/nuxieai/nuxie-ios",
+  "revision": "1c6ca493d50b5df477d79ccf734951ed774e78d9",
+  "files": [
+    {
+      "file": "app-action.json",
+      "source": "encodings/app-action.json",
+      "sha256": "9f231e210002140f300308cd2d98a878346241de6c34e01c26a42d16c4acd415"
+    },
+    {
+      "file": "feature-usage.json",
+      "source": "encodings/feature-usage.json",
+      "sha256": "2606a5062e041237fb7245dd919e921c383d94735d537e509aab429855b17c69"
+    },
+    {
+      "file": "forwarded-activity.json",
+      "source": "encodings/forwarded-activity.json",
+      "sha256": "03cf7f05b386b9b96f7bdcc7dab8a4b734b2fd1517a89740f5ff9d708930ace9"
+    },
+    {
+      "file": "outcome-commit.json",
+      "source": "purchases/outcome-commit.json",
+      "sha256": "9ba6554f5660d3b5689865d1922818bd4f31483162a02be0054282ccfd521171"
+    }
+  ]
+}

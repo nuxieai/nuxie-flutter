@@ -1,125 +1,22 @@
-import 'dart:async';
-
 import 'package:flutter/widgets.dart';
-import 'package:nuxie_flutter_platform_interface/nuxie_flutter_platform_interface.dart';
+import '../../nuxie_flutter.dart';
 
-import '../core/nuxie.dart';
-
-typedef NuxieFeatureWidgetBuilder = Widget Function(
-  BuildContext context,
-  FeatureAccess? access,
-  bool isLoading,
-  Object? error,
-);
-
-/// Convenience widget for rendering feature access state reactively.
-class NuxieFeatureBuilder extends StatefulWidget {
+/// Selects a globally scoped Feature from the native snapshot without querying.
+class NuxieFeatureBuilder extends StatelessWidget {
   const NuxieFeatureBuilder({
     super.key,
+    required this.client,
     required this.featureId,
     required this.builder,
-    this.requiredBalance,
-    this.entityId,
-    this.policy = FeatureCheckPolicy.cacheFirst,
-    this.autoRefresh = true,
   });
-
+  final NuxieClient client;
   final String featureId;
-  final double? requiredBalance;
-  final String? entityId;
-  final FeatureCheckPolicy policy;
-  final bool autoRefresh;
-  final NuxieFeatureWidgetBuilder builder;
-
+  final Widget Function(BuildContext, FeatureAccess?, FeatureState) builder;
   @override
-  State<NuxieFeatureBuilder> createState() => _NuxieFeatureBuilderWidgetState();
-}
-
-class _NuxieFeatureBuilderWidgetState extends State<NuxieFeatureBuilder> {
-  StreamSubscription<FeatureAccessChangedEvent>? _subscription;
-  FeatureAccess? _access;
-  bool _isLoading = true;
-  Object? _error;
-
-  @override
-  void initState() {
-    super.initState();
-
-    final nuxie = Nuxie.instance;
-    _subscription = nuxie.featureAccessChanges.listen((event) {
-      if (event.featureId != widget.featureId) {
-        return;
-      }
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _access = event.to;
-        _error = null;
-        _isLoading = false;
-      });
-    });
-
-    if (widget.autoRefresh) {
-      unawaited(_refresh());
-    } else {
-      _isLoading = false;
-    }
-  }
-
-  @override
-  void didUpdateWidget(covariant NuxieFeatureBuilder oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.featureId != widget.featureId ||
-        oldWidget.requiredBalance != widget.requiredBalance ||
-        oldWidget.entityId != widget.entityId ||
-        oldWidget.policy != widget.policy) {
-      unawaited(_refresh());
-    }
-  }
-
-  Future<void> _refresh() async {
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    try {
-      final access = await Nuxie.instance.hasFeature(
-        widget.featureId,
-        requiredBalance: widget.requiredBalance ?? 1,
-        entityId: widget.entityId,
-        policy: widget.policy,
+  Widget build(BuildContext context) =>
+      ValueListenableBuilder<NuxieFeatureSnapshot>(
+        valueListenable: client.features,
+        builder: (context, snapshot, _) =>
+            builder(context, snapshot[featureId], snapshot.state),
       );
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _access = access;
-        _isLoading = false;
-      });
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _error = error;
-        _isLoading = false;
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    unawaited(_subscription?.cancel());
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return widget.builder(context, _access, _isLoading, _error);
-  }
 }
