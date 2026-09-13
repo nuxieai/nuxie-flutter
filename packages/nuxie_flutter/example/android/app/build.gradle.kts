@@ -44,5 +44,5 @@ flutter {
 }
 
 dependencies {
-    debugImplementation("ai.nuxie:nuxie-android:0.2.0-source")
+    implementation("ai.nuxie:nuxie-android:0.2.0-source")
 }
