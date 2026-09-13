@@ -8,3 +8,7 @@ This branch is a source preview. `publish_to: none` remains intentional.
 - Publish qualified native registry artifacts, update `NATIVE-PINS.json` and dependency declarations together, and verify a clean consumer can acquire them before enabling pub.dev publication.
 - Review exported API docs and package README. Remove source-preview installation directions only when registry installation is proven.
 - Open the native and wrapper PRs in their owning repositories. Record parent pointer updates separately.
+
+- [ ] Resolve [UNIV-3135](https://universe.basis.dev/issue/UNIV-3135) and run strict
+  device usage validation against real grants, including the final unit. Current
+  local ingest rejects native usage and entity-scoped requests.

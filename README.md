@@ -120,7 +120,6 @@ For entity-scoped access, a particular threshold, or fresh server authority, que
 final access = await nuxie.hasFeature(
   'exports',
   requiredBalance: 1,
-  entityId: 'workspace_123',
   policy: FeatureCheckPolicy.remote,
 );
 ```
@@ -129,6 +128,12 @@ A remote failure is an error, not a synthesized denial. Global snapshot updates 
 not be used as answers to entity-scoped queries.
 
 ## Consume metered Features
+
+**Backend qualification is pending:** the current ingest rejects the native usage
+command and entity-scoped queries. These interfaces are preserved from the native
+SDKs, but are not production-qualified in this preview. Track the coordinated fix in
+[UNIV-3135](https://universe.basis.dev/issue/UNIV-3135). The example reports the error;
+it never invents a successful spend.
 
 ```dart
 final result = await nuxie.useFeatureAndWait('exports', amount: 1);

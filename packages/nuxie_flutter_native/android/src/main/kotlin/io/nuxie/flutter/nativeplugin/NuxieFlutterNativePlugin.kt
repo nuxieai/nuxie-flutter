@@ -19,6 +19,9 @@ import ai.nuxie.sdk.features.FeatureCheckPolicy
 import ai.nuxie.sdk.features.FeatureType
 import ai.nuxie.sdk.features.FeatureUsageResult
 import android.content.Context
+import android.app.Activity
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -33,7 +36,12 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 
-class NuxieFlutterNativePlugin : FlutterPlugin, PNuxieHostApi {
+class NuxieFlutterNativePlugin : FlutterPlugin, ActivityAware, PNuxieHostApi {
+  private var activity: Activity? = null
+  override fun onAttachedToActivity(binding: ActivityPluginBinding) { activity = binding.activity }
+  override fun onDetachedFromActivity() { activity = null }
+  override fun onDetachedFromActivityForConfigChanges() { activity = null }
+  override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) { activity = binding.activity }
   private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
   private lateinit var applicationContext: Context
   private var flutterApi: PNuxieFlutterApi? = null
@@ -103,7 +111,7 @@ class NuxieFlutterNativePlugin : FlutterPlugin, PNuxieHostApi {
         configureDevelopmentHost?.invoke(config)
       }
       if (Nuxie.isSetup) Nuxie.setPurchaseDelegate(config.purchaseDelegate)
-      else Nuxie.setup(applicationContext, config)
+      else Nuxie.setup(activity ?: applicationContext, config)
       configurationKey = key
       snapshotJob = scope.launch {
         Nuxie.features.snapshot.collect { value ->
