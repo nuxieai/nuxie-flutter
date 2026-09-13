@@ -26,24 +26,26 @@ Future<void> validateSdk(
   check(client.versions.native?.isNotEmpty == true, 'Native version available');
   final anonymous = await client.getAnonymousId();
   check(anonymous.isNotEmpty, 'Anonymous identity available');
-  final ready = Completer<void>();
-  void changed() {
-    if (client.features.value.state == FeatureState.ready &&
-        !ready.isCompleted) {
-      ready.complete();
+  Future<void> waitForReady() async {
+    final ready = Completer<void>();
+    void changed() {
+      if (client.features.value.state == FeatureState.ready &&
+          !ready.isCompleted) {
+        ready.complete();
+      }
+    }
+
+    client.features.addListener(changed);
+    try {
+      changed();
+      await ready.future.timeout(const Duration(seconds: 60));
+    } finally {
+      client.features.removeListener(changed);
     }
   }
 
-  client.features.addListener(changed);
-  try {
-    changed();
-    await ready.future.timeout(const Duration(seconds: 60));
-    report(
-      'PASS: Native profile admitted (${client.features.value.all.length} Features)',
-    );
-  } finally {
-    client.features.removeListener(changed);
-  }
+  await waitForReady();
+  report("PASS: Native profile admitted");
   final customer =
       customerId ?? 'flutter-lab-${DateTime.now().microsecondsSinceEpoch}';
   await client.identify(customer, userProperties: {'validation': true});
@@ -51,6 +53,8 @@ Future<void> validateSdk(
     await client.getDistinctId() == customer && await client.getIsIdentified(),
     'Identify updates native customer',
   );
+  await waitForReady();
+  report("PASS: Identified profile is ready");
   await client.setLocaleIdentifier('en-GB');
   await client.setLocaleIdentifier(null);
   report('PASS: Locale override and clear');
@@ -64,16 +68,8 @@ Future<void> validateSdk(
     'PASS: Remote Feature query returned ${access.allowed}, balance ${access.balance}',
   );
   if (entityA != null && entityB != null) {
-    final a = await client.hasFeature(
-      featureId,
-      entityId: entityA,
-      policy: FeatureCheckPolicy.remote,
-    );
-    final b = await client.hasFeature(
-      featureId,
-      entityId: entityB,
-      policy: FeatureCheckPolicy.remote,
-    );
+    final a = await client.hasFeature(featureId, entityId: entityA);
+    final b = await client.hasFeature(featureId, entityId: entityB);
     check(
       a.allowed && a.balance == 100 && b.balance == 100,
       'Both assigned entities have 100 credits',
@@ -163,6 +159,10 @@ Future<void> validateSdk(
     await client.getAnonymousId() == anonymous,
     'Reset retains requested anonymous identity',
   );
+  await waitForReady();
+  await client.identify(customer);
+  await waitForReady();
+  report("PASS: Reset and reidentify restore profile readiness");
   await client.shutdown();
   check(
     !client.isConfigured && client.features.value.state == FeatureState.unknown,
