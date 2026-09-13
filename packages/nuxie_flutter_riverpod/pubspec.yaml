@@ -1,11 +1,11 @@
 name: nuxie_flutter_riverpod
 description: Optional Riverpod adapters for nuxie_flutter.
-version: 0.1.0
+version: 0.2.0
 publish_to: none
 
 environment:
-  sdk: '>=3.3.0 <4.0.0'
-  flutter: '>=3.19.0'
+  sdk: '>=3.11.0 <4.0.0'
+  flutter: '>=3.41.0'
 
 dependencies:
   flutter:

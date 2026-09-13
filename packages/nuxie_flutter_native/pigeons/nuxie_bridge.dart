@@ -14,16 +14,14 @@ import 'package:pigeon/pigeon.dart';
   ),
 )
 class PConfigureRequest {
+  String? session;
   String? apiKey;
   String? wrapperVersion;
   bool? usingPurchaseController;
   String? environment;
   String? logLevel;
-  bool? enableConsoleLogging;
-  bool? redactSensitiveData;
   String? localeIdentifier;
   String? purchaseHandlingMode;
-  bool? testStoreEnabled;
 }
 
 class PFeatureAccess {
@@ -44,11 +42,17 @@ class PFeatureUsageResult {
   PFeatureAccess? authoritativeAccess;
 }
 
-class PFeatureAccessChangedEvent {
-  String? featureId;
-  PFeatureAccess? from;
-  PFeatureAccess? to;
-  int? timestampMs;
+class PFeatureSnapshot {
+  String? session;
+  int? identityGeneration;
+  int? revision;
+  String? state;
+  Map<String?, PFeatureAccess?>? all;
+}
+
+class PVersions {
+  String? nativeVersion;
+  int? contract;
 }
 
 class PExperienceRef {
@@ -82,7 +86,14 @@ class PPurchaseRequest {
   String? offerId;
   String? placementId;
   String? displayName;
+  String? description;
+  String? productType;
+  String? period;
+  int? periodCount;
+  PIntroductoryTerms? introductoryTerms;
   String? displayPrice;
+  String? eligibilityJws;
+  String? billingPlan;
   int? timestampMs;
 }
 
@@ -105,7 +116,10 @@ class PRestoreResult {
 @HostApi()
 abstract class PNuxieHostApi {
   @async
-  void configure(PConfigureRequest request);
+  PVersions configure(PConfigureRequest request);
+
+  @async
+  PRestoreResult restorePurchases();
 
   @async
   void shutdown();
@@ -168,7 +182,7 @@ abstract class PNuxieHostApi {
 
 @FlutterApi()
 abstract class PNuxieFlutterApi {
-  void onFeatureAccessChanged(PFeatureAccessChangedEvent event);
+  void onFeatureSnapshot(PFeatureSnapshot snapshot);
 
   void onActivity(PActivityInfo activity);
 
@@ -177,4 +191,13 @@ abstract class PNuxieFlutterApi {
   void onPurchaseRequest(PPurchaseRequest request);
 
   void onRestoreRequest(PRestoreRequest request);
+}
+
+class PIntroductoryTerms {
+  String? price;
+  String? period;
+  int? periodCount;
+  int? cycles;
+  String? paymentMode;
+  String? displayDuration;
 }

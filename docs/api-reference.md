@@ -1,61 +1,60 @@
 # API reference
 
-## Initialization
+Import `package:nuxie_flutter/nuxie_flutter.dart`. Depend on `NuxieClient` in your application; use `Nuxie.instance` as its production implementation.
 
-```dart
-Future<Nuxie> Nuxie.initialize({
-  required String apiKey,
-  NuxieOptions? options,
-  NuxiePurchaseController? purchaseController,
-  String wrapperVersion = '0.1.0',
-});
-```
+## Lifecycle and configuration
 
-`NuxieOptions` contains only customer-owned settings: environment, log level,
-console logging, sensitive-data redaction, locale, purchase handling mode, and
-the iOS development Test Store switch.
+| Member | Contract |
+| --- | --- |
+| `configure(NuxieConfiguration)` | Configures the native SDK. Equivalent concurrent calls share setup. A different configuration fails until shutdown. |
+| `isConfigured` | True only after setup and contract validation succeed. |
+| `versions` | Wrapper version plus native version and bridge contract after setup. |
+| `shutdown()` | Tears down the connection, settles pending native controller requests, and returns Features to unknown. Await before configuring again. |
 
-## Lifecycle and identity
+Configuration contains platform public keys, environment (`production` by default), log level (`warning`), optional locale, and billing (`NuxieBilling.native()` by default). External billing accepts one `NuxiePurchaseController`. Observer handling is a native billing option.
 
-- `shutdown()`
-- `identify(distinctId, {userProperties, userPropertiesSetOnce})`
-- `reset({keepAnonymousId = false})`
-- `getDistinctId()`
-- `getAnonymousId()`
-- `getIsIdentified()`
+## Customer and locale
 
-## Events and presentation
+| Method | Parameters / behavior |
+| --- | --- |
+| `identify(distinctId)` | Optional JSON `userProperties` and `userPropertiesSetOnce`. |
+| `reset(keepAnonymousId: false)` | Clears identified customer state; rotates anonymous identity by default. |
+| `getDistinctId()` / `getAnonymousId()` | Current native identity strings. |
+| `getIsIdentified()` | Whether the native customer is identified. |
+| `setLocaleIdentifier(String?)` | Locale override; null restores native default behavior. |
 
-- `trigger(event, {properties}) -> void`
-- `dismiss()`
-- `setLocaleIdentifier(localeIdentifier)`
+## Journeys and observation
 
-Journey decisions are native-owned. `trigger` does not return a match,
-presentation result, handle, or cancellation token.
+`trigger(event, properties: ...)` returns `Future<void>` after invoking native capture. It is not a presentation or access result. Event names must be nonempty and cannot start with `$`, which is reserved for internal events. Properties must be finite JSON values; cyclic objects are rejected.
+
+`dismiss()` requests native dismissal.
+
+`activities` is a live broadcast `Stream<NuxieActivityInfo>`: schema version, event ID, UTC `timestamp` and `receivedAt`, name, and immutable properties. `appActions` is a live broadcast `Stream<NuxieAppAction>`: name, optional payload, and Experience reference. Neither replays old events. Own and cancel your subscriptions.
 
 ## Features
 
-- `featureAccessChanges`
-- `hasFeature(featureId, {requiredBalance = 1, entityId, policy})`
-- `useFeature(featureId, {amount = 1, entityId, metadata}) -> void`
-- `useFeatureAndWait(featureId, {amount = 1, entityId, setUsage, metadata})`
+`features` is a stable `ValueListenable<NuxieFeatureSnapshot>`. Its immutable `all` map contains global `FeatureAccess` values; `state` is unknown, reconciling, or ready. Each publication is a coherent native snapshot. Empty ready is meaningful. Missing access and unknown readiness must not become a fabricated denial.
 
-`FeatureCheckPolicy` is `cacheFirst` or `remote`. Balances and usage values are
-`double`. Atomic usage results include `authoritativeAccess`.
+`FeatureAccess` preserves allowed, unlimited, nullable double balance, and Feature type.
 
-## Native callbacks
+| Method | Defaults and result |
+| --- | --- |
+| `hasFeature(id, requiredBalance: 1, entityId, policy: FeatureCheckPolicy.cacheFirst)` | Returns access for the exact query. `remote` requires the native authoritative query; failures throw. |
+| `useFeature(id, amount: 1, entityId, metadata)` | Enqueues native usage without waiting for server confirmation. |
+| `useFeatureAndWait(id, amount: 1, entityId, setUsage: false, metadata)` | Returns `FeatureUsageResult`: success, featureId, amountUsed, message, optional usage and authoritativeAccess. |
 
-- `activities: Stream<NuxieActivityInfo>`
-- `appActions: Stream<AppAction>`
-- `purchaseRequests: Stream<NuxiePurchaseRequest>`
-- `restoreRequests: Stream<NuxieRestoreRequest>`
+The bridge accepts finite nonnegative doubles to preserve the native interface. The current backend requires positive whole units for remote checks and usage; unsupported amounts fail without rounding. A successful final-unit spend remains successful even when post-spend access is denied. Use one usage method per action; do not retry an ambiguous result by creating another command.
 
-`AppAction` carries a name, scalar payload, and `ExperienceRef` with Experience
-identity and optional Journey identity.
+`NuxieFeatureBuilder(client:, featureId:, builder:)` rebuilds from the global snapshot. Its builder receives `(context, access, state)`. It does not fetch, consume, or reinterpret access.
 
 ## Commerce
 
-`NuxiePurchaseController.purchase` returns `NuxiePurchaseResult` with
-`purchased`, `cancelled`, `pending`, or `failed`.
-`NuxiePurchaseController.restore` returns `NuxieRestoreResult` with `restored`,
-`noPurchases`, or `failed`.
+`restorePurchases()` returns `RestoreResult` with `restored`, `noPurchases`, or `failed` type and optional failure message. It routes through the configured native or external billing owner.
+
+An external controller implements `purchase(NuxieStoreProduct)` and `restorePurchases()`. Purchase outcomes are `PurchaseResult.purchased()`, `.cancelled()`, `.pending()`, or `.failed(message)`. Native request IDs are implementation details. Requests expire after 120 seconds; late completions cannot fulfill another request.
+
+The product includes Nuxie and store identifiers, platform, optional base plan / purchase option / offer / Placement, available display name and price, Apple billing plan, and Apple introductory eligibility JWS. Available description, product type, period/count, and introductory terms are preserved; Android may omit terms that its public native model does not expose. Preserve the exact selected commercial context. If your provider cannot honor an eligibility override or billing plan, fail explicitly. Do not log eligibility tokens. Android display price can be absent; resolve the selected offer through your billing provider.
+
+## Errors
+
+Commands throw `NuxieException` for invalid configuration, unavailable lifecycle, unsupported platforms, incompatible native contract, and native failures. Invalid Dart arguments throw `ArgumentError`. A thrown transport error is not proof that durable usage was cancelled. Restore and purchase business outcomes use their typed results.

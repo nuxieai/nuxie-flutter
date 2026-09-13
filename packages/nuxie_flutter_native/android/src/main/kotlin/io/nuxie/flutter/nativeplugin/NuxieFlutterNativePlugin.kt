@@ -28,6 +28,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 
@@ -37,36 +39,23 @@ class NuxieFlutterNativePlugin : FlutterPlugin, PNuxieHostApi {
   private var flutterApi: PNuxieFlutterApi? = null
   private val purchaseBridge = FlutterPurchaseDelegateBridge(
     emit = { request ->
-      when (request) {
-        is FlutterCommerceRequest.Purchase ->
-          flutterApi?.onPurchaseRequest(request.value) { }
-        is FlutterCommerceRequest.Restore ->
-          flutterApi?.onRestoreRequest(request.value) { }
+      scope.launch {
+        when (request) {
+          is FlutterCommerceRequest.Purchase ->
+            flutterApi?.onPurchaseRequest(request.value) { }
+          is FlutterCommerceRequest.Restore ->
+            flutterApi?.onRestoreRequest(request.value) { }
+        }
       }
     },
   )
   private val sdkListener = object : NuxieListener {
-    override fun featureAccessDidChange(
-      featureId: String,
-      oldAccess: FeatureAccess?,
-      newAccess: FeatureAccess,
-    ) {
-      flutterApi?.onFeatureAccessChanged(
-        PFeatureAccessChangedEvent(
-          featureId = featureId,
-          from = oldAccess?.toPigeon(),
-          to = newAccess.toPigeon(),
-          timestampMs = System.currentTimeMillis(),
-        ),
-      ) { }
-    }
-
     override fun onActivityEmitted(sdk: Nuxie, info: NuxieActivityInfo) {
-      flutterApi?.onActivity(info.toPigeon()) { }
+      scope.launch { flutterApi?.onActivity(info.toPigeon()) { } }
     }
 
     override fun onAppActionRequested(sdk: Nuxie, action: AppAction) {
-      flutterApi?.onAppAction(action.toPigeon()) { }
+      scope.launch { flutterApi?.onAppAction(action.toPigeon()) { } }
     }
   }
 
@@ -82,32 +71,77 @@ class NuxieFlutterNativePlugin : FlutterPlugin, PNuxieHostApi {
     if (Nuxie.listener === sdkListener) {
       Nuxie.listener = null
     }
-    runCatching { Nuxie.shutdown() }
+    if (owner === this) { owner = null }
+    snapshotJob?.cancel()
     flutterApi = null
     scope.cancel()
   }
 
-  override fun configure(request: PConfigureRequest, callback: (Result<Unit>) -> Unit) {
-    val apiKey = request.apiKey?.trim()
-    if (apiKey.isNullOrEmpty()) {
-      callback(Result.failure(FlutterError("MISSING_API_KEY", "apiKey is required", null)))
-      return
-    }
+  private var snapshotJob: Job? = null
+  companion object {
+    private var owner: NuxieFlutterNativePlugin? = null
+    private var configurationKey: List<Any?>? = null
+    /** Native debug-host seam; never a Dart configuration option. */
+    var configureDevelopmentHost: ((NuxieConfiguration) -> Unit)? = null
+  }
 
+  override fun configure(request: PConfigureRequest, callback: (Result<PVersions>) -> Unit) {
     runCatching {
+      val apiKey = requireNotNull(request.apiKey).also { require(it.isNotBlank()) }
+      val session = requireNotNull(request.session)
+      if (owner != null && owner !== this) throw FlutterError("engineAlreadyAttached", "Nuxie is owned by another engine", null)
+      val key = listOf(apiKey, request.environment, request.logLevel, request.localeIdentifier,
+        request.purchaseHandlingMode, request.usingPurchaseController)
+      if (configurationKey != null && configurationKey != key) throw FlutterError("alreadyConfigured", "Shutdown before changing configuration", null)
+      if (Nuxie.isSetup && configurationKey == null) throw FlutterError("alreadyConfigured", "Native SDK was configured outside this bridge", null)
+      owner = this
+      purchaseBridge.cancelPending("session_replaced")
+      snapshotJob?.cancel()
       Nuxie.listener = sdkListener
-      Nuxie.setup(applicationContext, configuration(apiKey, request))
-    }.onSuccess {
-      callback(Result.success(Unit))
-    }.onFailure { error ->
-      if (!Nuxie.isSetup && Nuxie.listener === sdkListener) {
-        Nuxie.listener = null
+      val config = configuration(apiKey, request)
+      if ((applicationContext.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
+        configureDevelopmentHost?.invoke(config)
       }
-      callback(Result.failure(error))
+      if (Nuxie.isSetup) Nuxie.setPurchaseDelegate(config.purchaseDelegate)
+      else Nuxie.setup(applicationContext, config)
+      configurationKey = key
+      snapshotJob = scope.launch {
+        Nuxie.features.snapshot.collect { value ->
+          flutterApi?.onFeatureSnapshot(PFeatureSnapshot(
+            session = session, identityGeneration = value.identityGeneration,
+            revision = value.revision, state = when (value.state) {
+              ai.nuxie.sdk.features.FeatureInfo.State.Unknown -> "unknown"
+              ai.nuxie.sdk.features.FeatureInfo.State.Ready -> "ready"
+              ai.nuxie.sdk.features.FeatureInfo.State.Reconciling -> "reconciling"
+            }, all = value.all.mapValues { it.value.toPigeon() }
+          )) { }
+        }
+      }
+      PVersions(Nuxie.version, 2)
+    }.onFailure {
+      if (owner === this && !Nuxie.isSetup) {
+        owner = null
+        if (Nuxie.listener === sdkListener) Nuxie.listener = null
+        snapshotJob?.cancel()
+        purchaseBridge.cancelPending("setup_failed")
+      }
+    }.let(callback)
+  }
+
+  override fun restorePurchases(callback: (Result<PRestoreResult>) -> Unit) {
+    scope.launch {
+      runCatching { when (Nuxie.restorePurchases()) {
+        RestoreResult.Restored -> PRestoreResult(type = "restored")
+        RestoreResult.NoPurchases -> PRestoreResult(type = "no_purchases")
+        is RestoreResult.Failed -> PRestoreResult(type = "failed", message = "restoreFailed")
+      } }.let(callback)
     }
   }
 
   override fun shutdown(callback: (Result<Unit>) -> Unit) {
+    snapshotJob?.cancel()
+    configurationKey = null
+    owner = null
     purchaseBridge.cancelPending("sdk_shutdown")
     scope.launch {
       runCatching {
@@ -344,7 +378,7 @@ private sealed interface FlutterCommerceRequest {
 
 private class FlutterPurchaseDelegateBridge(
   private val emit: (FlutterCommerceRequest) -> Unit,
-  private val timeoutMs: Long = 60_000,
+  private val timeoutMs: Long = 120_000,
 ) : NuxiePurchaseDelegate {
   private val purchases = ConcurrentHashMap<String, CompletableDeferred<PurchaseResult>>()
   private val restores = ConcurrentHashMap<String, CompletableDeferred<RestoreResult>>()
@@ -365,6 +399,8 @@ private class FlutterPurchaseDelegateBridge(
           offerId = product.offerId,
           placementId = product.placementId,
           displayName = product.rawProduct?.name,
+          description = product.rawProduct?.description,
+          productType = product.rawProduct?.productType,
           displayPrice = null,
           timestampMs = System.currentTimeMillis(),
         ),

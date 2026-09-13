@@ -1,50 +1,16 @@
-import 'dart:async';
-
 import 'package:bloc/bloc.dart';
 import 'package:nuxie_flutter/nuxie_flutter.dart';
 
-class FeatureAccessCubit extends Cubit<FeatureAccess?> {
-  FeatureAccessCubit(
-    this._nuxie,
-    this._featureId, {
-    this.requiredBalance,
-    this.entityId,
-    this.policy = FeatureCheckPolicy.cacheFirst,
-    this.autoRefresh = true,
-  }) : super(null) {
-    _subscription = _nuxie.featureAccessChanges.listen((event) {
-      if (event.featureId == _featureId) {
-        emit(event.to);
-      }
-    });
-
-    if (autoRefresh) {
-      unawaited(refresh());
-    }
+/// Mirrors the native snapshot; it never queries or reconstructs Feature state.
+class NuxieFeaturesCubit extends Cubit<NuxieFeatureSnapshot> {
+  NuxieFeaturesCubit(this.client) : super(client.features.value) {
+    client.features.addListener(_changed);
   }
-
-  final Nuxie _nuxie;
-  final String _featureId;
-  final double? requiredBalance;
-  final String? entityId;
-  final FeatureCheckPolicy policy;
-  final bool autoRefresh;
-
-  StreamSubscription<FeatureAccessChangedEvent>? _subscription;
-
-  Future<void> refresh() async {
-    final result = await _nuxie.hasFeature(
-      _featureId,
-      requiredBalance: requiredBalance ?? 1,
-      entityId: entityId,
-      policy: policy,
-    );
-    emit(result);
-  }
-
+  final NuxieClient client;
+  void _changed() => emit(client.features.value);
   @override
-  Future<void> close() async {
-    await _subscription?.cancel();
+  Future<void> close() {
+    client.features.removeListener(_changed);
     return super.close();
   }
 }

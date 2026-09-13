@@ -9,14 +9,14 @@ maintain Feature access. Dart gives you a small, typed interface and reactive st
 
 **0.2 is a breaking redesign.** There are no compatibility aliases. This branch is a
 source preview pending native release qualification; do not install the old `0.1.0`
-artifacts for this interface. See [native setup](docs/native-setup.md) for building the
+artifacts for this interface. See [native setup](../../docs/native-setup.md) for building the
 example against the matching SDK sources.
 
 ## Your first integration
 
 Use Flutter 3.41+ / Dart 3.11+, iOS 15+, and Android API 23+. iOS uses Swift Package
 Manager. Android uses the native SDK's Gradle dependency. For this source preview, run `python3 scripts/prepare-native.py` and add a path dependency
-on `packages/nuxie_flutter` to your app. Follow the [native setup](docs/native-setup.md)
+on `packages/nuxie_flutter` to your app. Follow the [native setup](../../docs/native-setup.md)
 for your host. The Bloc and Riverpod adapters are optional.
 
 ```dart
@@ -221,7 +221,7 @@ queue an action before its navigator is mounted.
 
 ## Run the SDK Lab
 
-The [example app](packages/nuxie_flutter/example) runs on both iOS and Android. It has
+The [example app](example) runs on both iOS and Android. It has
 three screens, an automated validation action, and displays command results alongside real native callbacks:
 
 - **Connect:** configure, inspect versions/identity, identify/reset, locale, restore, shutdown.
@@ -245,6 +245,6 @@ not a production Dart endpoint override.
 
 ## More detail
 
-[API reference](docs/api-reference.md) · [Native setup](docs/native-setup.md) ·
-[Bloc and Riverpod](docs/adapters.md) · [Testing](docs/testing.md) ·
-[Architecture](docs/architecture.md) · [Troubleshooting](docs/troubleshooting.md)
+[API reference](../../docs/api-reference.md) · [Native setup](../../docs/native-setup.md) ·
+[Bloc and Riverpod](../../docs/adapters.md) · [Testing](../../docs/testing.md) ·
+[Architecture](../../docs/architecture.md) · [Troubleshooting](../../docs/troubleshooting.md)

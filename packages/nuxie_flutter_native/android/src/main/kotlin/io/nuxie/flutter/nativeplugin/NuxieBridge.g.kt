@@ -197,45 +197,39 @@ class FlutterError (
 
 /** Generated class from Pigeon that represents data sent in messages. */
 data class PConfigureRequest (
+  val session: String? = null,
   val apiKey: String? = null,
   val wrapperVersion: String? = null,
   val usingPurchaseController: Boolean? = null,
   val environment: String? = null,
   val logLevel: String? = null,
-  val enableConsoleLogging: Boolean? = null,
-  val redactSensitiveData: Boolean? = null,
   val localeIdentifier: String? = null,
-  val purchaseHandlingMode: String? = null,
-  val testStoreEnabled: Boolean? = null
+  val purchaseHandlingMode: String? = null
 )
  {
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): PConfigureRequest {
-      val apiKey = pigeonVar_list[0] as String?
-      val wrapperVersion = pigeonVar_list[1] as String?
-      val usingPurchaseController = pigeonVar_list[2] as Boolean?
-      val environment = pigeonVar_list[3] as String?
-      val logLevel = pigeonVar_list[4] as String?
-      val enableConsoleLogging = pigeonVar_list[5] as Boolean?
-      val redactSensitiveData = pigeonVar_list[6] as Boolean?
-      val localeIdentifier = pigeonVar_list[7] as String?
-      val purchaseHandlingMode = pigeonVar_list[8] as String?
-      val testStoreEnabled = pigeonVar_list[9] as Boolean?
-      return PConfigureRequest(apiKey, wrapperVersion, usingPurchaseController, environment, logLevel, enableConsoleLogging, redactSensitiveData, localeIdentifier, purchaseHandlingMode, testStoreEnabled)
+      val session = pigeonVar_list[0] as String?
+      val apiKey = pigeonVar_list[1] as String?
+      val wrapperVersion = pigeonVar_list[2] as String?
+      val usingPurchaseController = pigeonVar_list[3] as Boolean?
+      val environment = pigeonVar_list[4] as String?
+      val logLevel = pigeonVar_list[5] as String?
+      val localeIdentifier = pigeonVar_list[6] as String?
+      val purchaseHandlingMode = pigeonVar_list[7] as String?
+      return PConfigureRequest(session, apiKey, wrapperVersion, usingPurchaseController, environment, logLevel, localeIdentifier, purchaseHandlingMode)
     }
   }
   fun toList(): List<Any?> {
     return listOf(
+      session,
       apiKey,
       wrapperVersion,
       usingPurchaseController,
       environment,
       logLevel,
-      enableConsoleLogging,
-      redactSensitiveData,
       localeIdentifier,
       purchaseHandlingMode,
-      testStoreEnabled,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -246,21 +240,19 @@ data class PConfigureRequest (
       return true
     }
     val other = other as PConfigureRequest
-    return NuxieBridgePigeonUtils.deepEquals(this.apiKey, other.apiKey) && NuxieBridgePigeonUtils.deepEquals(this.wrapperVersion, other.wrapperVersion) && NuxieBridgePigeonUtils.deepEquals(this.usingPurchaseController, other.usingPurchaseController) && NuxieBridgePigeonUtils.deepEquals(this.environment, other.environment) && NuxieBridgePigeonUtils.deepEquals(this.logLevel, other.logLevel) && NuxieBridgePigeonUtils.deepEquals(this.enableConsoleLogging, other.enableConsoleLogging) && NuxieBridgePigeonUtils.deepEquals(this.redactSensitiveData, other.redactSensitiveData) && NuxieBridgePigeonUtils.deepEquals(this.localeIdentifier, other.localeIdentifier) && NuxieBridgePigeonUtils.deepEquals(this.purchaseHandlingMode, other.purchaseHandlingMode) && NuxieBridgePigeonUtils.deepEquals(this.testStoreEnabled, other.testStoreEnabled)
+    return NuxieBridgePigeonUtils.deepEquals(this.session, other.session) && NuxieBridgePigeonUtils.deepEquals(this.apiKey, other.apiKey) && NuxieBridgePigeonUtils.deepEquals(this.wrapperVersion, other.wrapperVersion) && NuxieBridgePigeonUtils.deepEquals(this.usingPurchaseController, other.usingPurchaseController) && NuxieBridgePigeonUtils.deepEquals(this.environment, other.environment) && NuxieBridgePigeonUtils.deepEquals(this.logLevel, other.logLevel) && NuxieBridgePigeonUtils.deepEquals(this.localeIdentifier, other.localeIdentifier) && NuxieBridgePigeonUtils.deepEquals(this.purchaseHandlingMode, other.purchaseHandlingMode)
   }
 
   override fun hashCode(): Int {
     var result = javaClass.hashCode()
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.session)
     result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.apiKey)
     result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.wrapperVersion)
     result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.usingPurchaseController)
     result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.environment)
     result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.logLevel)
-    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.enableConsoleLogging)
-    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.redactSensitiveData)
     result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.localeIdentifier)
     result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.purchaseHandlingMode)
-    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.testStoreEnabled)
     return result
   }
 }
@@ -374,28 +366,31 @@ data class PFeatureUsageResult (
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class PFeatureAccessChangedEvent (
-  val featureId: String? = null,
-  val from: PFeatureAccess? = null,
-  val to: PFeatureAccess? = null,
-  val timestampMs: Long? = null
+data class PFeatureSnapshot (
+  val session: String? = null,
+  val identityGeneration: Long? = null,
+  val revision: Long? = null,
+  val state: String? = null,
+  val all: Map<String?, PFeatureAccess?>? = null
 )
  {
   companion object {
-    fun fromList(pigeonVar_list: List<Any?>): PFeatureAccessChangedEvent {
-      val featureId = pigeonVar_list[0] as String?
-      val from = pigeonVar_list[1] as PFeatureAccess?
-      val to = pigeonVar_list[2] as PFeatureAccess?
-      val timestampMs = pigeonVar_list[3] as Long?
-      return PFeatureAccessChangedEvent(featureId, from, to, timestampMs)
+    fun fromList(pigeonVar_list: List<Any?>): PFeatureSnapshot {
+      val session = pigeonVar_list[0] as String?
+      val identityGeneration = pigeonVar_list[1] as Long?
+      val revision = pigeonVar_list[2] as Long?
+      val state = pigeonVar_list[3] as String?
+      val all = pigeonVar_list[4] as Map<String?, PFeatureAccess?>?
+      return PFeatureSnapshot(session, identityGeneration, revision, state, all)
     }
   }
   fun toList(): List<Any?> {
     return listOf(
-      featureId,
-      from,
-      to,
-      timestampMs,
+      session,
+      identityGeneration,
+      revision,
+      state,
+      all,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -405,16 +400,55 @@ data class PFeatureAccessChangedEvent (
     if (this === other) {
       return true
     }
-    val other = other as PFeatureAccessChangedEvent
-    return NuxieBridgePigeonUtils.deepEquals(this.featureId, other.featureId) && NuxieBridgePigeonUtils.deepEquals(this.from, other.from) && NuxieBridgePigeonUtils.deepEquals(this.to, other.to) && NuxieBridgePigeonUtils.deepEquals(this.timestampMs, other.timestampMs)
+    val other = other as PFeatureSnapshot
+    return NuxieBridgePigeonUtils.deepEquals(this.session, other.session) && NuxieBridgePigeonUtils.deepEquals(this.identityGeneration, other.identityGeneration) && NuxieBridgePigeonUtils.deepEquals(this.revision, other.revision) && NuxieBridgePigeonUtils.deepEquals(this.state, other.state) && NuxieBridgePigeonUtils.deepEquals(this.all, other.all)
   }
 
   override fun hashCode(): Int {
     var result = javaClass.hashCode()
-    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.featureId)
-    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.from)
-    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.to)
-    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.timestampMs)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.session)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.identityGeneration)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.revision)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.state)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.all)
+    return result
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class PVersions (
+  val nativeVersion: String? = null,
+  val contract: Long? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): PVersions {
+      val nativeVersion = pigeonVar_list[0] as String?
+      val contract = pigeonVar_list[1] as Long?
+      return PVersions(nativeVersion, contract)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      nativeVersion,
+      contract,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as PVersions
+    return NuxieBridgePigeonUtils.deepEquals(this.nativeVersion, other.nativeVersion) && NuxieBridgePigeonUtils.deepEquals(this.contract, other.contract)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.nativeVersion)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.contract)
     return result
   }
 }
@@ -568,7 +602,14 @@ data class PPurchaseRequest (
   val offerId: String? = null,
   val placementId: String? = null,
   val displayName: String? = null,
+  val description: String? = null,
+  val productType: String? = null,
+  val period: String? = null,
+  val periodCount: Long? = null,
+  val introductoryTerms: PIntroductoryTerms? = null,
   val displayPrice: String? = null,
+  val eligibilityJws: String? = null,
+  val billingPlan: String? = null,
   val timestampMs: Long? = null
 )
  {
@@ -583,9 +624,16 @@ data class PPurchaseRequest (
       val offerId = pigeonVar_list[6] as String?
       val placementId = pigeonVar_list[7] as String?
       val displayName = pigeonVar_list[8] as String?
-      val displayPrice = pigeonVar_list[9] as String?
-      val timestampMs = pigeonVar_list[10] as Long?
-      return PPurchaseRequest(requestId, platform, productId, storeProductId, basePlanId, purchaseOptionId, offerId, placementId, displayName, displayPrice, timestampMs)
+      val description = pigeonVar_list[9] as String?
+      val productType = pigeonVar_list[10] as String?
+      val period = pigeonVar_list[11] as String?
+      val periodCount = pigeonVar_list[12] as Long?
+      val introductoryTerms = pigeonVar_list[13] as PIntroductoryTerms?
+      val displayPrice = pigeonVar_list[14] as String?
+      val eligibilityJws = pigeonVar_list[15] as String?
+      val billingPlan = pigeonVar_list[16] as String?
+      val timestampMs = pigeonVar_list[17] as Long?
+      return PPurchaseRequest(requestId, platform, productId, storeProductId, basePlanId, purchaseOptionId, offerId, placementId, displayName, description, productType, period, periodCount, introductoryTerms, displayPrice, eligibilityJws, billingPlan, timestampMs)
     }
   }
   fun toList(): List<Any?> {
@@ -599,7 +647,14 @@ data class PPurchaseRequest (
       offerId,
       placementId,
       displayName,
+      description,
+      productType,
+      period,
+      periodCount,
+      introductoryTerms,
       displayPrice,
+      eligibilityJws,
+      billingPlan,
       timestampMs,
     )
   }
@@ -611,7 +666,7 @@ data class PPurchaseRequest (
       return true
     }
     val other = other as PPurchaseRequest
-    return NuxieBridgePigeonUtils.deepEquals(this.requestId, other.requestId) && NuxieBridgePigeonUtils.deepEquals(this.platform, other.platform) && NuxieBridgePigeonUtils.deepEquals(this.productId, other.productId) && NuxieBridgePigeonUtils.deepEquals(this.storeProductId, other.storeProductId) && NuxieBridgePigeonUtils.deepEquals(this.basePlanId, other.basePlanId) && NuxieBridgePigeonUtils.deepEquals(this.purchaseOptionId, other.purchaseOptionId) && NuxieBridgePigeonUtils.deepEquals(this.offerId, other.offerId) && NuxieBridgePigeonUtils.deepEquals(this.placementId, other.placementId) && NuxieBridgePigeonUtils.deepEquals(this.displayName, other.displayName) && NuxieBridgePigeonUtils.deepEquals(this.displayPrice, other.displayPrice) && NuxieBridgePigeonUtils.deepEquals(this.timestampMs, other.timestampMs)
+    return NuxieBridgePigeonUtils.deepEquals(this.requestId, other.requestId) && NuxieBridgePigeonUtils.deepEquals(this.platform, other.platform) && NuxieBridgePigeonUtils.deepEquals(this.productId, other.productId) && NuxieBridgePigeonUtils.deepEquals(this.storeProductId, other.storeProductId) && NuxieBridgePigeonUtils.deepEquals(this.basePlanId, other.basePlanId) && NuxieBridgePigeonUtils.deepEquals(this.purchaseOptionId, other.purchaseOptionId) && NuxieBridgePigeonUtils.deepEquals(this.offerId, other.offerId) && NuxieBridgePigeonUtils.deepEquals(this.placementId, other.placementId) && NuxieBridgePigeonUtils.deepEquals(this.displayName, other.displayName) && NuxieBridgePigeonUtils.deepEquals(this.description, other.description) && NuxieBridgePigeonUtils.deepEquals(this.productType, other.productType) && NuxieBridgePigeonUtils.deepEquals(this.period, other.period) && NuxieBridgePigeonUtils.deepEquals(this.periodCount, other.periodCount) && NuxieBridgePigeonUtils.deepEquals(this.introductoryTerms, other.introductoryTerms) && NuxieBridgePigeonUtils.deepEquals(this.displayPrice, other.displayPrice) && NuxieBridgePigeonUtils.deepEquals(this.eligibilityJws, other.eligibilityJws) && NuxieBridgePigeonUtils.deepEquals(this.billingPlan, other.billingPlan) && NuxieBridgePigeonUtils.deepEquals(this.timestampMs, other.timestampMs)
   }
 
   override fun hashCode(): Int {
@@ -625,7 +680,14 @@ data class PPurchaseRequest (
     result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.offerId)
     result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.placementId)
     result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.displayName)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.description)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.productType)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.period)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.periodCount)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.introductoryTerms)
     result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.displayPrice)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.eligibilityJws)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.billingPlan)
     result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.timestampMs)
     return result
   }
@@ -748,6 +810,60 @@ data class PRestoreResult (
     return result
   }
 }
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class PIntroductoryTerms (
+  val price: String? = null,
+  val period: String? = null,
+  val periodCount: Long? = null,
+  val cycles: Long? = null,
+  val paymentMode: String? = null,
+  val displayDuration: String? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): PIntroductoryTerms {
+      val price = pigeonVar_list[0] as String?
+      val period = pigeonVar_list[1] as String?
+      val periodCount = pigeonVar_list[2] as Long?
+      val cycles = pigeonVar_list[3] as Long?
+      val paymentMode = pigeonVar_list[4] as String?
+      val displayDuration = pigeonVar_list[5] as String?
+      return PIntroductoryTerms(price, period, periodCount, cycles, paymentMode, displayDuration)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      price,
+      period,
+      periodCount,
+      cycles,
+      paymentMode,
+      displayDuration,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as PIntroductoryTerms
+    return NuxieBridgePigeonUtils.deepEquals(this.price, other.price) && NuxieBridgePigeonUtils.deepEquals(this.period, other.period) && NuxieBridgePigeonUtils.deepEquals(this.periodCount, other.periodCount) && NuxieBridgePigeonUtils.deepEquals(this.cycles, other.cycles) && NuxieBridgePigeonUtils.deepEquals(this.paymentMode, other.paymentMode) && NuxieBridgePigeonUtils.deepEquals(this.displayDuration, other.displayDuration)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.price)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.period)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.periodCount)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.cycles)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.paymentMode)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.displayDuration)
+    return result
+  }
+}
 private open class NuxieBridgePigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -768,42 +884,52 @@ private open class NuxieBridgePigeonCodec : StandardMessageCodec() {
       }
       132.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PFeatureAccessChangedEvent.fromList(it)
+          PFeatureSnapshot.fromList(it)
         }
       }
       133.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PExperienceRef.fromList(it)
+          PVersions.fromList(it)
         }
       }
       134.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PAppAction.fromList(it)
+          PExperienceRef.fromList(it)
         }
       }
       135.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PActivityInfo.fromList(it)
+          PAppAction.fromList(it)
         }
       }
       136.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PPurchaseRequest.fromList(it)
+          PActivityInfo.fromList(it)
         }
       }
       137.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PRestoreRequest.fromList(it)
+          PPurchaseRequest.fromList(it)
         }
       }
       138.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PPurchaseResult.fromList(it)
+          PRestoreRequest.fromList(it)
         }
       }
       139.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
+          PPurchaseResult.fromList(it)
+        }
+      }
+      140.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
           PRestoreResult.fromList(it)
+        }
+      }
+      141.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          PIntroductoryTerms.fromList(it)
         }
       }
       else -> super.readValueOfType(type, buffer)
@@ -823,36 +949,44 @@ private open class NuxieBridgePigeonCodec : StandardMessageCodec() {
         stream.write(131)
         writeValue(stream, value.toList())
       }
-      is PFeatureAccessChangedEvent -> {
+      is PFeatureSnapshot -> {
         stream.write(132)
         writeValue(stream, value.toList())
       }
-      is PExperienceRef -> {
+      is PVersions -> {
         stream.write(133)
         writeValue(stream, value.toList())
       }
-      is PAppAction -> {
+      is PExperienceRef -> {
         stream.write(134)
         writeValue(stream, value.toList())
       }
-      is PActivityInfo -> {
+      is PAppAction -> {
         stream.write(135)
         writeValue(stream, value.toList())
       }
-      is PPurchaseRequest -> {
+      is PActivityInfo -> {
         stream.write(136)
         writeValue(stream, value.toList())
       }
-      is PRestoreRequest -> {
+      is PPurchaseRequest -> {
         stream.write(137)
         writeValue(stream, value.toList())
       }
-      is PPurchaseResult -> {
+      is PRestoreRequest -> {
         stream.write(138)
         writeValue(stream, value.toList())
       }
-      is PRestoreResult -> {
+      is PPurchaseResult -> {
         stream.write(139)
+        writeValue(stream, value.toList())
+      }
+      is PRestoreResult -> {
+        stream.write(140)
+        writeValue(stream, value.toList())
+      }
+      is PIntroductoryTerms -> {
+        stream.write(141)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -863,7 +997,8 @@ private open class NuxieBridgePigeonCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface PNuxieHostApi {
-  fun configure(request: PConfigureRequest, callback: (Result<Unit>) -> Unit)
+  fun configure(request: PConfigureRequest, callback: (Result<PVersions>) -> Unit)
+  fun restorePurchases(callback: (Result<PRestoreResult>) -> Unit)
   fun shutdown(callback: (Result<Unit>) -> Unit)
   fun identify(distinctId: String, userProperties: Map<String?, Any?>?, userPropertiesSetOnce: Map<String?, Any?>?, callback: (Result<Unit>) -> Unit)
   fun reset(keepAnonymousId: Boolean, callback: (Result<Unit>) -> Unit)
@@ -894,12 +1029,31 @@ interface PNuxieHostApi {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
             val requestArg = args[0] as PConfigureRequest
-            api.configure(requestArg) { result: Result<Unit> ->
+            api.configure(requestArg) { result: Result<PVersions> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(NuxieBridgePigeonUtils.wrapError(error))
               } else {
-                reply.reply(NuxieBridgePigeonUtils.wrapResult(null))
+                val data = result.getOrNull()
+                reply.reply(NuxieBridgePigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.restorePurchases$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.restorePurchases{ result: Result<PRestoreResult> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(NuxieBridgePigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(NuxieBridgePigeonUtils.wrapResult(data))
               }
             }
           }
@@ -1190,12 +1344,12 @@ class PNuxieFlutterApi(private val binaryMessenger: BinaryMessenger, private val
       NuxieBridgePigeonCodec()
     }
   }
-  fun onFeatureAccessChanged(eventArg: PFeatureAccessChangedEvent, callback: (Result<Unit>) -> Unit)
+  fun onFeatureSnapshot(snapshotArg: PFeatureSnapshot, callback: (Result<Unit>) -> Unit)
 {
     val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
-    val channelName = "dev.flutter.pigeon.nuxie_flutter_native.PNuxieFlutterApi.onFeatureAccessChanged$separatedMessageChannelSuffix"
+    val channelName = "dev.flutter.pigeon.nuxie_flutter_native.PNuxieFlutterApi.onFeatureSnapshot$separatedMessageChannelSuffix"
     val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
-    channel.send(listOf(eventArg)) {
+    channel.send(listOf(snapshotArg)) {
       if (it is List<*>) {
         if (it.size > 1) {
           callback(Result.failure(FlutterError(it[0] as String, it[1] as String, it[2] as String?)))

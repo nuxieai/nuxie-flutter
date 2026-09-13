@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 enum FeatureCheckPolicy { cacheFirst, remote }
 
 enum FeatureType { boolean, metered, creditSystem }
@@ -14,6 +16,15 @@ class FeatureAccess {
   final bool unlimited;
   final double? balance;
   final FeatureType type;
+  @override
+  bool operator ==(Object other) =>
+      other is FeatureAccess &&
+      allowed == other.allowed &&
+      unlimited == other.unlimited &&
+      balance == other.balance &&
+      type == other.type;
+  @override
+  int get hashCode => Object.hash(allowed, unlimited, balance, type);
 }
 
 class FeatureUsageInfo {
@@ -40,4 +51,44 @@ class FeatureUsageResult {
   final String? message;
   final FeatureUsageInfo? usage;
   final FeatureAccess? authoritativeAccess;
+}
+
+enum FeatureState { unknown, reconciling, ready }
+
+/// One immutable native publication. This map is globally scoped.
+final class NuxieFeatureSnapshot {
+  NuxieFeatureSnapshot({
+    required this.state,
+    required Map<String, FeatureAccess> all,
+  }) : all = Map.unmodifiable(all);
+  NuxieFeatureSnapshot.unknown() : state = FeatureState.unknown, all = const {};
+  final FeatureState state;
+  final Map<String, FeatureAccess> all;
+  FeatureAccess? operator [](String featureId) => all[featureId];
+  @override
+  bool operator ==(Object other) =>
+      other is NuxieFeatureSnapshot &&
+      state == other.state &&
+      mapEquals(all, other.all);
+  @override
+  int get hashCode => Object.hash(
+    state,
+    Object.hashAllUnordered(
+      all.entries.map((e) => Object.hash(e.key, e.value)),
+    ),
+  );
+}
+
+/// Private transport publication metadata, not a customer identity.
+final class NativeFeatureSnapshot {
+  const NativeFeatureSnapshot({
+    required this.session,
+    required this.identityGeneration,
+    required this.revision,
+    required this.value,
+  });
+  final String session;
+  final int identityGeneration;
+  final int revision;
+  final NuxieFeatureSnapshot value;
 }

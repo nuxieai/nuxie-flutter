@@ -8,12 +8,14 @@ void main() {
     test('configure request contains only customer-owned options', () {
       final request = toConfigureRequest(
         apiKey: 'NX_TEST',
+        session: 'test',
         wrapperVersion: '1.2.3',
         usingPurchaseController: true,
-        options: const NuxieOptions(
+        options: const NuxieConfiguration(
+          apiKeys: NuxieApiKeys(ios: "ios", android: "android"),
           environment: NuxieEnvironment.development,
           logLevel: NuxieLogLevel.info,
-          purchaseHandlingMode: PurchaseHandlingMode.observer,
+          billing: NuxieBilling.native(handling: PurchaseHandlingMode.observer),
           localeIdentifier: 'en-GB',
         ),
       );
@@ -78,18 +80,9 @@ void main() {
     });
 
     test('commerce results use canonical variants', () {
+      expect(toPurchaseResult(const PurchaseResult.pending()).type, 'pending');
       expect(
-        toPurchaseResult(
-          const NuxiePurchaseResult(type: NuxiePurchaseResultType.pending),
-        ).type,
-        'pending',
-      );
-      expect(
-        toRestoreResult(
-          const NuxieRestoreResult(
-            type: NuxieRestoreResultType.noPurchases,
-          ),
-        ).type,
+        toRestoreResult(const RestoreResult.noPurchases()).type,
         'no_purchases',
       );
     });

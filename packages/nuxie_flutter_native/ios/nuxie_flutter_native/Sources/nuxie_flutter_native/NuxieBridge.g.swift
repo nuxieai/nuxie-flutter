@@ -180,77 +180,67 @@ func deepHashNuxieBridge(value: Any?, hasher: inout Hasher) {
 
 /// Generated class from Pigeon that represents data sent in messages.
 struct PConfigureRequest: Hashable {
+  var session: String? = nil
   var apiKey: String? = nil
   var wrapperVersion: String? = nil
   var usingPurchaseController: Bool? = nil
   var environment: String? = nil
   var logLevel: String? = nil
-  var enableConsoleLogging: Bool? = nil
-  var redactSensitiveData: Bool? = nil
   var localeIdentifier: String? = nil
   var purchaseHandlingMode: String? = nil
-  var testStoreEnabled: Bool? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> PConfigureRequest? {
-    let apiKey: String? = nilOrValue(pigeonVar_list[0])
-    let wrapperVersion: String? = nilOrValue(pigeonVar_list[1])
-    let usingPurchaseController: Bool? = nilOrValue(pigeonVar_list[2])
-    let environment: String? = nilOrValue(pigeonVar_list[3])
-    let logLevel: String? = nilOrValue(pigeonVar_list[4])
-    let enableConsoleLogging: Bool? = nilOrValue(pigeonVar_list[5])
-    let redactSensitiveData: Bool? = nilOrValue(pigeonVar_list[6])
-    let localeIdentifier: String? = nilOrValue(pigeonVar_list[7])
-    let purchaseHandlingMode: String? = nilOrValue(pigeonVar_list[8])
-    let testStoreEnabled: Bool? = nilOrValue(pigeonVar_list[9])
+    let session: String? = nilOrValue(pigeonVar_list[0])
+    let apiKey: String? = nilOrValue(pigeonVar_list[1])
+    let wrapperVersion: String? = nilOrValue(pigeonVar_list[2])
+    let usingPurchaseController: Bool? = nilOrValue(pigeonVar_list[3])
+    let environment: String? = nilOrValue(pigeonVar_list[4])
+    let logLevel: String? = nilOrValue(pigeonVar_list[5])
+    let localeIdentifier: String? = nilOrValue(pigeonVar_list[6])
+    let purchaseHandlingMode: String? = nilOrValue(pigeonVar_list[7])
 
     return PConfigureRequest(
+      session: session,
       apiKey: apiKey,
       wrapperVersion: wrapperVersion,
       usingPurchaseController: usingPurchaseController,
       environment: environment,
       logLevel: logLevel,
-      enableConsoleLogging: enableConsoleLogging,
-      redactSensitiveData: redactSensitiveData,
       localeIdentifier: localeIdentifier,
-      purchaseHandlingMode: purchaseHandlingMode,
-      testStoreEnabled: testStoreEnabled
+      purchaseHandlingMode: purchaseHandlingMode
     )
   }
   func toList() -> [Any?] {
     return [
+      session,
       apiKey,
       wrapperVersion,
       usingPurchaseController,
       environment,
       logLevel,
-      enableConsoleLogging,
-      redactSensitiveData,
       localeIdentifier,
       purchaseHandlingMode,
-      testStoreEnabled,
     ]
   }
   static func == (lhs: PConfigureRequest, rhs: PConfigureRequest) -> Bool {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return deepEqualsNuxieBridge(lhs.apiKey, rhs.apiKey) && deepEqualsNuxieBridge(lhs.wrapperVersion, rhs.wrapperVersion) && deepEqualsNuxieBridge(lhs.usingPurchaseController, rhs.usingPurchaseController) && deepEqualsNuxieBridge(lhs.environment, rhs.environment) && deepEqualsNuxieBridge(lhs.logLevel, rhs.logLevel) && deepEqualsNuxieBridge(lhs.enableConsoleLogging, rhs.enableConsoleLogging) && deepEqualsNuxieBridge(lhs.redactSensitiveData, rhs.redactSensitiveData) && deepEqualsNuxieBridge(lhs.localeIdentifier, rhs.localeIdentifier) && deepEqualsNuxieBridge(lhs.purchaseHandlingMode, rhs.purchaseHandlingMode) && deepEqualsNuxieBridge(lhs.testStoreEnabled, rhs.testStoreEnabled)
+    return deepEqualsNuxieBridge(lhs.session, rhs.session) && deepEqualsNuxieBridge(lhs.apiKey, rhs.apiKey) && deepEqualsNuxieBridge(lhs.wrapperVersion, rhs.wrapperVersion) && deepEqualsNuxieBridge(lhs.usingPurchaseController, rhs.usingPurchaseController) && deepEqualsNuxieBridge(lhs.environment, rhs.environment) && deepEqualsNuxieBridge(lhs.logLevel, rhs.logLevel) && deepEqualsNuxieBridge(lhs.localeIdentifier, rhs.localeIdentifier) && deepEqualsNuxieBridge(lhs.purchaseHandlingMode, rhs.purchaseHandlingMode)
   }
 
   func hash(into hasher: inout Hasher) {
     hasher.combine("PConfigureRequest")
+    deepHashNuxieBridge(value: session, hasher: &hasher)
     deepHashNuxieBridge(value: apiKey, hasher: &hasher)
     deepHashNuxieBridge(value: wrapperVersion, hasher: &hasher)
     deepHashNuxieBridge(value: usingPurchaseController, hasher: &hasher)
     deepHashNuxieBridge(value: environment, hasher: &hasher)
     deepHashNuxieBridge(value: logLevel, hasher: &hasher)
-    deepHashNuxieBridge(value: enableConsoleLogging, hasher: &hasher)
-    deepHashNuxieBridge(value: redactSensitiveData, hasher: &hasher)
     deepHashNuxieBridge(value: localeIdentifier, hasher: &hasher)
     deepHashNuxieBridge(value: purchaseHandlingMode, hasher: &hasher)
-    deepHashNuxieBridge(value: testStoreEnabled, hasher: &hasher)
   }
 }
 
@@ -367,48 +357,89 @@ struct PFeatureUsageResult: Hashable {
 }
 
 /// Generated class from Pigeon that represents data sent in messages.
-struct PFeatureAccessChangedEvent: Hashable {
-  var featureId: String? = nil
-  var from: PFeatureAccess? = nil
-  var to: PFeatureAccess? = nil
-  var timestampMs: Int64? = nil
+struct PFeatureSnapshot: Hashable {
+  var session: String? = nil
+  var identityGeneration: Int64? = nil
+  var revision: Int64? = nil
+  var state: String? = nil
+  var all: [String?: PFeatureAccess?]? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
-  static func fromList(_ pigeonVar_list: [Any?]) -> PFeatureAccessChangedEvent? {
-    let featureId: String? = nilOrValue(pigeonVar_list[0])
-    let from: PFeatureAccess? = nilOrValue(pigeonVar_list[1])
-    let to: PFeatureAccess? = nilOrValue(pigeonVar_list[2])
-    let timestampMs: Int64? = nilOrValue(pigeonVar_list[3])
+  static func fromList(_ pigeonVar_list: [Any?]) -> PFeatureSnapshot? {
+    let session: String? = nilOrValue(pigeonVar_list[0])
+    let identityGeneration: Int64? = nilOrValue(pigeonVar_list[1])
+    let revision: Int64? = nilOrValue(pigeonVar_list[2])
+    let state: String? = nilOrValue(pigeonVar_list[3])
+    let all: [String?: PFeatureAccess?]? = nilOrValue(pigeonVar_list[4])
 
-    return PFeatureAccessChangedEvent(
-      featureId: featureId,
-      from: from,
-      to: to,
-      timestampMs: timestampMs
+    return PFeatureSnapshot(
+      session: session,
+      identityGeneration: identityGeneration,
+      revision: revision,
+      state: state,
+      all: all
     )
   }
   func toList() -> [Any?] {
     return [
-      featureId,
-      from,
-      to,
-      timestampMs,
+      session,
+      identityGeneration,
+      revision,
+      state,
+      all,
     ]
   }
-  static func == (lhs: PFeatureAccessChangedEvent, rhs: PFeatureAccessChangedEvent) -> Bool {
+  static func == (lhs: PFeatureSnapshot, rhs: PFeatureSnapshot) -> Bool {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return deepEqualsNuxieBridge(lhs.featureId, rhs.featureId) && deepEqualsNuxieBridge(lhs.from, rhs.from) && deepEqualsNuxieBridge(lhs.to, rhs.to) && deepEqualsNuxieBridge(lhs.timestampMs, rhs.timestampMs)
+    return deepEqualsNuxieBridge(lhs.session, rhs.session) && deepEqualsNuxieBridge(lhs.identityGeneration, rhs.identityGeneration) && deepEqualsNuxieBridge(lhs.revision, rhs.revision) && deepEqualsNuxieBridge(lhs.state, rhs.state) && deepEqualsNuxieBridge(lhs.all, rhs.all)
   }
 
   func hash(into hasher: inout Hasher) {
-    hasher.combine("PFeatureAccessChangedEvent")
-    deepHashNuxieBridge(value: featureId, hasher: &hasher)
-    deepHashNuxieBridge(value: from, hasher: &hasher)
-    deepHashNuxieBridge(value: to, hasher: &hasher)
-    deepHashNuxieBridge(value: timestampMs, hasher: &hasher)
+    hasher.combine("PFeatureSnapshot")
+    deepHashNuxieBridge(value: session, hasher: &hasher)
+    deepHashNuxieBridge(value: identityGeneration, hasher: &hasher)
+    deepHashNuxieBridge(value: revision, hasher: &hasher)
+    deepHashNuxieBridge(value: state, hasher: &hasher)
+    deepHashNuxieBridge(value: all, hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct PVersions: Hashable {
+  var nativeVersion: String? = nil
+  var contract: Int64? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> PVersions? {
+    let nativeVersion: String? = nilOrValue(pigeonVar_list[0])
+    let contract: Int64? = nilOrValue(pigeonVar_list[1])
+
+    return PVersions(
+      nativeVersion: nativeVersion,
+      contract: contract
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      nativeVersion,
+      contract,
+    ]
+  }
+  static func == (lhs: PVersions, rhs: PVersions) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsNuxieBridge(lhs.nativeVersion, rhs.nativeVersion) && deepEqualsNuxieBridge(lhs.contract, rhs.contract)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("PVersions")
+    deepHashNuxieBridge(value: nativeVersion, hasher: &hasher)
+    deepHashNuxieBridge(value: contract, hasher: &hasher)
   }
 }
 
@@ -561,7 +592,14 @@ struct PPurchaseRequest: Hashable {
   var offerId: String? = nil
   var placementId: String? = nil
   var displayName: String? = nil
+  var description: String? = nil
+  var productType: String? = nil
+  var period: String? = nil
+  var periodCount: Int64? = nil
+  var introductoryTerms: PIntroductoryTerms? = nil
   var displayPrice: String? = nil
+  var eligibilityJws: String? = nil
+  var billingPlan: String? = nil
   var timestampMs: Int64? = nil
 
 
@@ -576,8 +614,15 @@ struct PPurchaseRequest: Hashable {
     let offerId: String? = nilOrValue(pigeonVar_list[6])
     let placementId: String? = nilOrValue(pigeonVar_list[7])
     let displayName: String? = nilOrValue(pigeonVar_list[8])
-    let displayPrice: String? = nilOrValue(pigeonVar_list[9])
-    let timestampMs: Int64? = nilOrValue(pigeonVar_list[10])
+    let description: String? = nilOrValue(pigeonVar_list[9])
+    let productType: String? = nilOrValue(pigeonVar_list[10])
+    let period: String? = nilOrValue(pigeonVar_list[11])
+    let periodCount: Int64? = nilOrValue(pigeonVar_list[12])
+    let introductoryTerms: PIntroductoryTerms? = nilOrValue(pigeonVar_list[13])
+    let displayPrice: String? = nilOrValue(pigeonVar_list[14])
+    let eligibilityJws: String? = nilOrValue(pigeonVar_list[15])
+    let billingPlan: String? = nilOrValue(pigeonVar_list[16])
+    let timestampMs: Int64? = nilOrValue(pigeonVar_list[17])
 
     return PPurchaseRequest(
       requestId: requestId,
@@ -589,7 +634,14 @@ struct PPurchaseRequest: Hashable {
       offerId: offerId,
       placementId: placementId,
       displayName: displayName,
+      description: description,
+      productType: productType,
+      period: period,
+      periodCount: periodCount,
+      introductoryTerms: introductoryTerms,
       displayPrice: displayPrice,
+      eligibilityJws: eligibilityJws,
+      billingPlan: billingPlan,
       timestampMs: timestampMs
     )
   }
@@ -604,7 +656,14 @@ struct PPurchaseRequest: Hashable {
       offerId,
       placementId,
       displayName,
+      description,
+      productType,
+      period,
+      periodCount,
+      introductoryTerms,
       displayPrice,
+      eligibilityJws,
+      billingPlan,
       timestampMs,
     ]
   }
@@ -612,7 +671,7 @@ struct PPurchaseRequest: Hashable {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return deepEqualsNuxieBridge(lhs.requestId, rhs.requestId) && deepEqualsNuxieBridge(lhs.platform, rhs.platform) && deepEqualsNuxieBridge(lhs.productId, rhs.productId) && deepEqualsNuxieBridge(lhs.storeProductId, rhs.storeProductId) && deepEqualsNuxieBridge(lhs.basePlanId, rhs.basePlanId) && deepEqualsNuxieBridge(lhs.purchaseOptionId, rhs.purchaseOptionId) && deepEqualsNuxieBridge(lhs.offerId, rhs.offerId) && deepEqualsNuxieBridge(lhs.placementId, rhs.placementId) && deepEqualsNuxieBridge(lhs.displayName, rhs.displayName) && deepEqualsNuxieBridge(lhs.displayPrice, rhs.displayPrice) && deepEqualsNuxieBridge(lhs.timestampMs, rhs.timestampMs)
+    return deepEqualsNuxieBridge(lhs.requestId, rhs.requestId) && deepEqualsNuxieBridge(lhs.platform, rhs.platform) && deepEqualsNuxieBridge(lhs.productId, rhs.productId) && deepEqualsNuxieBridge(lhs.storeProductId, rhs.storeProductId) && deepEqualsNuxieBridge(lhs.basePlanId, rhs.basePlanId) && deepEqualsNuxieBridge(lhs.purchaseOptionId, rhs.purchaseOptionId) && deepEqualsNuxieBridge(lhs.offerId, rhs.offerId) && deepEqualsNuxieBridge(lhs.placementId, rhs.placementId) && deepEqualsNuxieBridge(lhs.displayName, rhs.displayName) && deepEqualsNuxieBridge(lhs.description, rhs.description) && deepEqualsNuxieBridge(lhs.productType, rhs.productType) && deepEqualsNuxieBridge(lhs.period, rhs.period) && deepEqualsNuxieBridge(lhs.periodCount, rhs.periodCount) && deepEqualsNuxieBridge(lhs.introductoryTerms, rhs.introductoryTerms) && deepEqualsNuxieBridge(lhs.displayPrice, rhs.displayPrice) && deepEqualsNuxieBridge(lhs.eligibilityJws, rhs.eligibilityJws) && deepEqualsNuxieBridge(lhs.billingPlan, rhs.billingPlan) && deepEqualsNuxieBridge(lhs.timestampMs, rhs.timestampMs)
   }
 
   func hash(into hasher: inout Hasher) {
@@ -626,7 +685,14 @@ struct PPurchaseRequest: Hashable {
     deepHashNuxieBridge(value: offerId, hasher: &hasher)
     deepHashNuxieBridge(value: placementId, hasher: &hasher)
     deepHashNuxieBridge(value: displayName, hasher: &hasher)
+    deepHashNuxieBridge(value: description, hasher: &hasher)
+    deepHashNuxieBridge(value: productType, hasher: &hasher)
+    deepHashNuxieBridge(value: period, hasher: &hasher)
+    deepHashNuxieBridge(value: periodCount, hasher: &hasher)
+    deepHashNuxieBridge(value: introductoryTerms, hasher: &hasher)
     deepHashNuxieBridge(value: displayPrice, hasher: &hasher)
+    deepHashNuxieBridge(value: eligibilityJws, hasher: &hasher)
+    deepHashNuxieBridge(value: billingPlan, hasher: &hasher)
     deepHashNuxieBridge(value: timestampMs, hasher: &hasher)
   }
 }
@@ -744,6 +810,62 @@ struct PRestoreResult: Hashable {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct PIntroductoryTerms: Hashable {
+  var price: String? = nil
+  var period: String? = nil
+  var periodCount: Int64? = nil
+  var cycles: Int64? = nil
+  var paymentMode: String? = nil
+  var displayDuration: String? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> PIntroductoryTerms? {
+    let price: String? = nilOrValue(pigeonVar_list[0])
+    let period: String? = nilOrValue(pigeonVar_list[1])
+    let periodCount: Int64? = nilOrValue(pigeonVar_list[2])
+    let cycles: Int64? = nilOrValue(pigeonVar_list[3])
+    let paymentMode: String? = nilOrValue(pigeonVar_list[4])
+    let displayDuration: String? = nilOrValue(pigeonVar_list[5])
+
+    return PIntroductoryTerms(
+      price: price,
+      period: period,
+      periodCount: periodCount,
+      cycles: cycles,
+      paymentMode: paymentMode,
+      displayDuration: displayDuration
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      price,
+      period,
+      periodCount,
+      cycles,
+      paymentMode,
+      displayDuration,
+    ]
+  }
+  static func == (lhs: PIntroductoryTerms, rhs: PIntroductoryTerms) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsNuxieBridge(lhs.price, rhs.price) && deepEqualsNuxieBridge(lhs.period, rhs.period) && deepEqualsNuxieBridge(lhs.periodCount, rhs.periodCount) && deepEqualsNuxieBridge(lhs.cycles, rhs.cycles) && deepEqualsNuxieBridge(lhs.paymentMode, rhs.paymentMode) && deepEqualsNuxieBridge(lhs.displayDuration, rhs.displayDuration)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("PIntroductoryTerms")
+    deepHashNuxieBridge(value: price, hasher: &hasher)
+    deepHashNuxieBridge(value: period, hasher: &hasher)
+    deepHashNuxieBridge(value: periodCount, hasher: &hasher)
+    deepHashNuxieBridge(value: cycles, hasher: &hasher)
+    deepHashNuxieBridge(value: paymentMode, hasher: &hasher)
+    deepHashNuxieBridge(value: displayDuration, hasher: &hasher)
+  }
+}
+
 private class NuxieBridgePigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -754,21 +876,25 @@ private class NuxieBridgePigeonCodecReader: FlutterStandardReader {
     case 131:
       return PFeatureUsageResult.fromList(self.readValue() as! [Any?])
     case 132:
-      return PFeatureAccessChangedEvent.fromList(self.readValue() as! [Any?])
+      return PFeatureSnapshot.fromList(self.readValue() as! [Any?])
     case 133:
-      return PExperienceRef.fromList(self.readValue() as! [Any?])
+      return PVersions.fromList(self.readValue() as! [Any?])
     case 134:
-      return PAppAction.fromList(self.readValue() as! [Any?])
+      return PExperienceRef.fromList(self.readValue() as! [Any?])
     case 135:
-      return PActivityInfo.fromList(self.readValue() as! [Any?])
+      return PAppAction.fromList(self.readValue() as! [Any?])
     case 136:
-      return PPurchaseRequest.fromList(self.readValue() as! [Any?])
+      return PActivityInfo.fromList(self.readValue() as! [Any?])
     case 137:
-      return PRestoreRequest.fromList(self.readValue() as! [Any?])
+      return PPurchaseRequest.fromList(self.readValue() as! [Any?])
     case 138:
-      return PPurchaseResult.fromList(self.readValue() as! [Any?])
+      return PRestoreRequest.fromList(self.readValue() as! [Any?])
     case 139:
+      return PPurchaseResult.fromList(self.readValue() as! [Any?])
+    case 140:
       return PRestoreResult.fromList(self.readValue() as! [Any?])
+    case 141:
+      return PIntroductoryTerms.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -786,29 +912,35 @@ private class NuxieBridgePigeonCodecWriter: FlutterStandardWriter {
     } else if let value = value as? PFeatureUsageResult {
       super.writeByte(131)
       super.writeValue(value.toList())
-    } else if let value = value as? PFeatureAccessChangedEvent {
+    } else if let value = value as? PFeatureSnapshot {
       super.writeByte(132)
       super.writeValue(value.toList())
-    } else if let value = value as? PExperienceRef {
+    } else if let value = value as? PVersions {
       super.writeByte(133)
       super.writeValue(value.toList())
-    } else if let value = value as? PAppAction {
+    } else if let value = value as? PExperienceRef {
       super.writeByte(134)
       super.writeValue(value.toList())
-    } else if let value = value as? PActivityInfo {
+    } else if let value = value as? PAppAction {
       super.writeByte(135)
       super.writeValue(value.toList())
-    } else if let value = value as? PPurchaseRequest {
+    } else if let value = value as? PActivityInfo {
       super.writeByte(136)
       super.writeValue(value.toList())
-    } else if let value = value as? PRestoreRequest {
+    } else if let value = value as? PPurchaseRequest {
       super.writeByte(137)
       super.writeValue(value.toList())
-    } else if let value = value as? PPurchaseResult {
+    } else if let value = value as? PRestoreRequest {
       super.writeByte(138)
       super.writeValue(value.toList())
-    } else if let value = value as? PRestoreResult {
+    } else if let value = value as? PPurchaseResult {
       super.writeByte(139)
+      super.writeValue(value.toList())
+    } else if let value = value as? PRestoreResult {
+      super.writeByte(140)
+      super.writeValue(value.toList())
+    } else if let value = value as? PIntroductoryTerms {
+      super.writeByte(141)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -833,7 +965,8 @@ class NuxieBridgePigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
 
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol PNuxieHostApi {
-  func configure(request: PConfigureRequest, completion: @escaping (Result<Void, Error>) -> Void)
+  func configure(request: PConfigureRequest, completion: @escaping (Result<PVersions, Error>) -> Void)
+  func restorePurchases(completion: @escaping (Result<PRestoreResult, Error>) -> Void)
   func shutdown(completion: @escaping (Result<Void, Error>) -> Void)
   func identify(distinctId: String, userProperties: [String?: Any?]?, userPropertiesSetOnce: [String?: Any?]?, completion: @escaping (Result<Void, Error>) -> Void)
   func reset(keepAnonymousId: Bool, completion: @escaping (Result<Void, Error>) -> Void)
@@ -863,8 +996,8 @@ class PNuxieHostApiSetup {
         let requestArg = args[0] as! PConfigureRequest
         api.configure(request: requestArg) { result in
           switch result {
-          case .success:
-            reply(wrapResult(nil))
+          case .success(let res):
+            reply(wrapResult(res))
           case .failure(let error):
             reply(wrapError(error))
           }
@@ -872,6 +1005,21 @@ class PNuxieHostApiSetup {
       }
     } else {
       configureChannel.setMessageHandler(nil)
+    }
+    let restorePurchasesChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.restorePurchases\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      restorePurchasesChannel.setMessageHandler { _, reply in
+        api.restorePurchases { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      restorePurchasesChannel.setMessageHandler(nil)
     }
     let shutdownChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nuxie_flutter_native.PNuxieHostApi.shutdown\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
@@ -1112,7 +1260,7 @@ class PNuxieHostApiSetup {
 }
 /// Generated protocol from Pigeon that represents Flutter messages that can be called from Swift.
 protocol PNuxieFlutterApiProtocol {
-  func onFeatureAccessChanged(event eventArg: PFeatureAccessChangedEvent, completion: @escaping (Result<Void, PigeonError>) -> Void)
+  func onFeatureSnapshot(snapshot snapshotArg: PFeatureSnapshot, completion: @escaping (Result<Void, PigeonError>) -> Void)
   func onActivity(activity activityArg: PActivityInfo, completion: @escaping (Result<Void, PigeonError>) -> Void)
   func onAppAction(action actionArg: PAppAction, completion: @escaping (Result<Void, PigeonError>) -> Void)
   func onPurchaseRequest(request requestArg: PPurchaseRequest, completion: @escaping (Result<Void, PigeonError>) -> Void)
@@ -1128,10 +1276,10 @@ class PNuxieFlutterApi: PNuxieFlutterApiProtocol {
   var codec: NuxieBridgePigeonCodec {
     return NuxieBridgePigeonCodec.shared
   }
-  func onFeatureAccessChanged(event eventArg: PFeatureAccessChangedEvent, completion: @escaping (Result<Void, PigeonError>) -> Void) {
-    let channelName: String = "dev.flutter.pigeon.nuxie_flutter_native.PNuxieFlutterApi.onFeatureAccessChanged\(messageChannelSuffix)"
+  func onFeatureSnapshot(snapshot snapshotArg: PFeatureSnapshot, completion: @escaping (Result<Void, PigeonError>) -> Void) {
+    let channelName: String = "dev.flutter.pigeon.nuxie_flutter_native.PNuxieFlutterApi.onFeatureSnapshot\(messageChannelSuffix)"
     let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
-    channel.sendMessage([eventArg] as [Any?]) { response in
+    channel.sendMessage([snapshotArg] as [Any?]) { response in
       guard let listResponse = response as? [Any?] else {
         completion(.failure(createConnectionError(withChannelName: channelName)))
         return

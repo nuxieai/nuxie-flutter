@@ -11,3 +11,5 @@ coverage/
 .packages
 pubspec.lock
 .DS_Store
+
+.native/
