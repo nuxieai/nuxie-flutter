@@ -306,6 +306,9 @@ data class PFeatureAccess (
 /** Generated class from Pigeon that represents data sent in messages. */
 data class PFeatureConsumptionResult (
   val operationId: String? = null,
+  val customerId: String? = null,
+  val featureId: String? = null,
+  val occurredAtMs: Double? = null,
   val accepted: Boolean? = null,
   val code: String? = null,
   val quantity: Double? = null,
@@ -318,19 +321,25 @@ data class PFeatureConsumptionResult (
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): PFeatureConsumptionResult {
       val operationId = pigeonVar_list[0] as String?
-      val accepted = pigeonVar_list[1] as Boolean?
-      val code = pigeonVar_list[2] as String?
-      val quantity = pigeonVar_list[3] as Double?
-      val balance = pigeonVar_list[4] as Double?
-      val unlimited = pigeonVar_list[5] as Boolean?
-      val active = pigeonVar_list[6] as Boolean?
-      val idempotentReplay = pigeonVar_list[7] as Boolean?
-      return PFeatureConsumptionResult(operationId, accepted, code, quantity, balance, unlimited, active, idempotentReplay)
+      val customerId = pigeonVar_list[1] as String?
+      val featureId = pigeonVar_list[2] as String?
+      val occurredAtMs = pigeonVar_list[3] as Double?
+      val accepted = pigeonVar_list[4] as Boolean?
+      val code = pigeonVar_list[5] as String?
+      val quantity = pigeonVar_list[6] as Double?
+      val balance = pigeonVar_list[7] as Double?
+      val unlimited = pigeonVar_list[8] as Boolean?
+      val active = pigeonVar_list[9] as Boolean?
+      val idempotentReplay = pigeonVar_list[10] as Boolean?
+      return PFeatureConsumptionResult(operationId, customerId, featureId, occurredAtMs, accepted, code, quantity, balance, unlimited, active, idempotentReplay)
     }
   }
   fun toList(): List<Any?> {
     return listOf(
       operationId,
+      customerId,
+      featureId,
+      occurredAtMs,
       accepted,
       code,
       quantity,
@@ -348,12 +357,15 @@ data class PFeatureConsumptionResult (
       return true
     }
     val other = other as PFeatureConsumptionResult
-    return NuxieBridgePigeonUtils.deepEquals(this.operationId, other.operationId) && NuxieBridgePigeonUtils.deepEquals(this.accepted, other.accepted) && NuxieBridgePigeonUtils.deepEquals(this.code, other.code) && NuxieBridgePigeonUtils.deepEquals(this.quantity, other.quantity) && NuxieBridgePigeonUtils.deepEquals(this.balance, other.balance) && NuxieBridgePigeonUtils.deepEquals(this.unlimited, other.unlimited) && NuxieBridgePigeonUtils.deepEquals(this.active, other.active) && NuxieBridgePigeonUtils.deepEquals(this.idempotentReplay, other.idempotentReplay)
+    return NuxieBridgePigeonUtils.deepEquals(this.operationId, other.operationId) && NuxieBridgePigeonUtils.deepEquals(this.customerId, other.customerId) && NuxieBridgePigeonUtils.deepEquals(this.featureId, other.featureId) && NuxieBridgePigeonUtils.deepEquals(this.occurredAtMs, other.occurredAtMs) && NuxieBridgePigeonUtils.deepEquals(this.accepted, other.accepted) && NuxieBridgePigeonUtils.deepEquals(this.code, other.code) && NuxieBridgePigeonUtils.deepEquals(this.quantity, other.quantity) && NuxieBridgePigeonUtils.deepEquals(this.balance, other.balance) && NuxieBridgePigeonUtils.deepEquals(this.unlimited, other.unlimited) && NuxieBridgePigeonUtils.deepEquals(this.active, other.active) && NuxieBridgePigeonUtils.deepEquals(this.idempotentReplay, other.idempotentReplay)
   }
 
   override fun hashCode(): Int {
     var result = javaClass.hashCode()
     result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.operationId)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.customerId)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.featureId)
+    result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.occurredAtMs)
     result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.accepted)
     result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.code)
     result = 31 * result + NuxieBridgePigeonUtils.deepHash(this.quantity)

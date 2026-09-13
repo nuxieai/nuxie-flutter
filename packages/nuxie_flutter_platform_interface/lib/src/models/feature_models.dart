@@ -97,6 +97,9 @@ final class NativeFeatureSnapshot {
 class FeatureConsumptionResult {
   const FeatureConsumptionResult({
     required this.operationId,
+    required this.customerId,
+    required this.featureId,
+    this.occurredAtMs,
     required this.accepted,
     required this.code,
     required this.quantity,
@@ -106,6 +109,9 @@ class FeatureConsumptionResult {
     required this.idempotentReplay,
   });
   final String operationId;
+  final String customerId;
+  final String featureId;
+  final double? occurredAtMs;
   final bool accepted;
   final String code;
   final double quantity;

@@ -44,6 +44,9 @@ FeatureConsumptionResult fromFeatureConsumptionResult(
   PFeatureConsumptionResult value,
 ) => FeatureConsumptionResult(
   operationId: requiredField(value.operationId, 'operationId'),
+  customerId: requiredField(value.customerId, 'customerId'),
+  featureId: requiredField(value.featureId, 'featureId'),
+  occurredAtMs: value.occurredAtMs,
   accepted: requiredField(value.accepted, 'accepted'),
   code: requiredField(value.code, 'code'),
   quantity: requiredField(value.quantity, 'quantity'),

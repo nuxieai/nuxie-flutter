@@ -45,6 +45,9 @@ void main() {
       final result = fromFeatureConsumptionResult(
         PFeatureConsumptionResult(
           operationId: response['operationId'] as String,
+          customerId: response['customerId'] as String,
+          featureId: response['featureId'] as String,
+          occurredAtMs: (response['occurredAtMs'] as num?)?.toDouble(),
           accepted: response['accepted'] as bool,
           code: response['code'] as String,
           quantity: (response['quantity'] as num).toDouble(),
@@ -59,9 +62,49 @@ void main() {
       expect(result.balance, response['balance']);
       expect(result.idempotentReplay, response['idempotentReplay']);
       expect(result.operationId, response['operationId']);
+      expect(result.customerId, response['customerId']);
+      expect(result.featureId, response['featureId']);
+      expect(result.occurredAtMs, response['occurredAtMs']);
       expect(result.quantity, response['quantity']);
     });
   }
+  test('consumption receipt retains a missing historical timestamp', () {
+    final result = fromFeatureConsumptionResult(
+      PFeatureConsumptionResult(
+        operationId: 'historical',
+        customerId: 'customer',
+        featureId: 'credits',
+        accepted: true,
+        code: 'consumed',
+        quantity: 1,
+        balance: 0,
+        unlimited: false,
+        active: false,
+        idempotentReplay: true,
+      ),
+    );
+    expect(result.occurredAtMs, isNull);
+  });
+  test('consumption receipt requires customer and Feature identity', () {
+    for (final missingCustomer in [true, false]) {
+      expect(
+        () => fromFeatureConsumptionResult(
+          PFeatureConsumptionResult(
+            operationId: 'incomplete',
+            customerId: missingCustomer ? null : 'customer',
+            featureId: missingCustomer ? 'credits' : null,
+            accepted: true,
+            code: 'consumed',
+            quantity: 1,
+            unlimited: false,
+            active: false,
+            idempotentReplay: false,
+          ),
+        ),
+        throwsA(isA<NuxieException>()),
+      );
+    }
+  });
   test('malformed snapshot cannot masquerade as denied ready state', () {
     expect(
       () => fromFeatureSnapshot(

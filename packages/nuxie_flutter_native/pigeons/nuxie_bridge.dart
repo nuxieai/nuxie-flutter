@@ -33,6 +33,9 @@ class PFeatureAccess {
 
 class PFeatureConsumptionResult {
   String? operationId;
+  String? customerId;
+  String? featureId;
+  double? occurredAtMs;
   bool? accepted;
   String? code;
   double? quantity;

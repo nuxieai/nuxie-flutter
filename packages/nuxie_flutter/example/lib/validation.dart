@@ -87,6 +87,12 @@ Future<void> validateSdk(
       finalUnit.accepted && !finalUnit.active && finalUnit.balance == 0,
       'Final credit consumption accepted with zero remaining',
     );
+    check(
+      finalUnit.customerId == customer &&
+          finalUnit.featureId == featureId &&
+          finalUnit.occurredAtMs != null,
+      'Receipt preserves customer, Feature, and commit time',
+    );
     final replay = await client.consumeFeature(
       featureId,
       quantity: 100,
@@ -94,7 +100,10 @@ Future<void> validateSdk(
       entityId: entityA,
     );
     check(
-      replay.accepted && replay.idempotentReplay && replay.balance == 0,
+      replay.accepted &&
+          replay.idempotentReplay &&
+          replay.balance == 0 &&
+          replay.occurredAtMs == finalUnit.occurredAtMs,
       'Same operation replays without another spend',
     );
     final denied = await client.consumeFeature(
@@ -123,7 +132,7 @@ Future<void> validateSdk(
       setUsage: true,
     );
     check(
-      increased.success && increased.usage?.remaining == 75,
+      increased.success && increased.authoritativeAccess?.balance == 75,
       'Cumulative report charges only the increase',
     );
     final lower = await client.useFeatureAndWait(
@@ -133,7 +142,7 @@ Future<void> validateSdk(
       setUsage: true,
     );
     check(
-      lower.success && lower.usage?.remaining == 75,
+      lower.success && lower.authoritativeAccess?.balance == 75,
       'Lower cumulative report restores no credits',
     );
   } else {
