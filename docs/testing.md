@@ -1,8 +1,16 @@
 # Testing
 
+## Current native pins
+
+iOS `95d76d41eb4cc945cb57e5c1bcd8333ed15d55cc` and Android `4d65783e2eec5b585673041146dff887258d3c93` include
+published Apple runtime 0.10.8 and Android runtime 0.4.8, rendered-video visibility,
+and interruption recovery fixes. Native preparation, wrapper builds, playback,
+and final readiness for these revisions remain pending. Results below identify
+the earlier revisions they qualified.
+
 ## Native pin refresh — September 18, 2026
 
-Current pins are iOS `858321e2e57cc62b6cb978a97834ad068f748c02` and Android
+The preceding qualification used iOS `858321e2e57cc62b6cb978a97834ad068f748c02` and Android
 `1514b1cce3d64502b483c41fa551e7290caf10b0`, both pushed development commits.
 They include shared decoder admission, hidden-screen media suspension, and the
 iOS content-addressed-video format fix. `python3 scripts/check.py` passed all six
