@@ -20,9 +20,15 @@ passed. Each host's independently hashed cached scene and MP4 matched the signed
 content-addressed identities. The delivery ledger recorded one MP4 request and
 one scene request per host, without additional requests during looping.
 
-These checks establish visible playback and verified cache contents. Audio,
-captions, offline restart, and the remaining failure matrix are separate
-qualification requirements. Final readiness/review remain outstanding.
+Both apps also restarted and visibly played both phases with the fixture
+server suspended, then the server was restored. This is origin-unavailability
+coverage, not airplane-mode coverage. Android took about 32 seconds from
+configuration to `screen_shown`; intermediate capture windows failed before
+both phases became visible. Its foreground path waits for profile revalidation,
+so prompt offline startup remains unqualified.
+
+Audio, captions, and the remaining failure matrix are separate qualification
+requirements. Final readiness/review remain outstanding.
 
 ## Fast package checks
 
