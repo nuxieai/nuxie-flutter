@@ -14,6 +14,17 @@ The core suite verifies startup callback ordering, configuration conflicts and r
 
 ## Native integration
 
+`python3 scripts/check.py` runs all package checks, verifies generated bridges,
+and builds the example for Android and the local Mac's iOS simulator
+architecture. It prepares Flutter configuration before invoking Xcode with an
+explicit architecture; this avoids Xcode 27's failing multi-architecture
+`lipo -verify_arch` invocation. An arm64 simulator build does not establish
+x86_64 simulator or physical-device qualification.
+
+For Android, the check restores missing wrapper files from the installed
+Flutter SDK cache without replacing the checked-in Gradle distribution pin,
+then runs Gradle directly with the host's Java configuration.
+
 The Lab’s validation button runs `lib/validation.dart` against the real client. It uses a disposable customer and never retries an ambiguous usage command. To run the same checks under Flutter's integration runner:
 
 ```sh
@@ -70,3 +81,22 @@ does not prove presentation or App Action delivery. Inspect those separately.
 The prior attended presentation screenshots remain under `screenshots/`.
 Real StoreKit / Play purchase and restore outcomes require their own provider
 qualification; the local grant test does not claim that evidence.
+
+## Video delivery candidate — September 18, 2026
+
+This candidate pins iOS `38428e8bb1c65605d6c982ff22b2a18d63229950` and Android
+`e76714a76e14b8f293e782934c107a789d0a67f0`, both pushed development commits
+pending final native SDK qualification and review under
+[UNIV-3262](https://universe.basis.dev/issue/UNIV-3262).
+
+With Flutter 3.41.4, `python3 scripts/check.py` passed analysis and all 29 tests
+across six packages, fixture provenance validation, unchanged Pigeon generation,
+the arm64 iOS simulator Debug build on Xcode 27, and the Android Debug APK build
+from the pinned source composite. Both checked-in SwiftPM resolutions record
+the exact iOS revision. The Android APK passed 16 KiB ZIP-alignment verification.
+
+The initial iOS invocation failed in multi-architecture `lipo` verification;
+the local check now explicitly selects the host simulator architecture as
+described above. These results establish build integration, not signed-video
+playback, cache behavior, captions, or lifecycle qualification through Flutter.
+That device coverage remains outstanding, as do final readiness and PR review.
