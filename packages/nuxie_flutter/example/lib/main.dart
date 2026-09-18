@@ -84,6 +84,10 @@ class _SdkLabState extends State<SdkLab> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         unawaited(run('Validation', validate));
       });
+    } else if (const bool.fromEnvironment('NUXIE_AUTOCONNECT')) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        unawaited(run('Configure', configure));
+      });
     }
   }
 

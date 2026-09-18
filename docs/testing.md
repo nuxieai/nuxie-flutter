@@ -2,19 +2,27 @@
 
 ## Native pin refresh — September 18, 2026
 
-Current pins are iOS `072e38b24df67f7e6326815ed5e126c93c8e67d7` and Android
+Current pins are iOS `858321e2e57cc62b6cb978a97834ad068f748c02` and Android
 `1514b1cce3d64502b483c41fa551e7290caf10b0`, both pushed development commits.
-They include shared decoder admission and hidden-screen media suspension.
-The check script passed all six package analyses, 29 Dart tests, generated-bridge
-verification, and the arm64 iOS simulator example build. Its Android step
-encountered missing metadata in the machine's shared Gradle cache; rerunning
-`:app:assembleDebug` with a task-local `GRADLE_USER_HOME` passed. That cache was
-configured with the installed JDK 17 and 21 paths. The resulting APK passed
-`zipalign -c -P 16 -v 4`. Native checkout SHAs match the pins.
+They include shared decoder admission, hidden-screen media suspension, and the
+iOS content-addressed-video format fix. `python3 scripts/check.py` passed all six
+package analyses, 29 Dart tests, generated-bridge verification, the arm64 iOS
+simulator example build, and the Android build using a task-local
+`GRADLE_USER_HOME` configured with installed JDK 17 and 21. Native checkout SHAs
+match the pins. The playback-only auto-connect addition subsequently passed
+example analysis, its widget test, and the configured iOS build.
 
-These are build/contract checks. Signed-video playback through the Flutter
-host and final readiness/review remain outstanding at these revisions.
+The actual Flutter apps acquired the signed development fixture through the
+normal SDK profile and verification path on the iOS simulator and API 36 Android
+emulator. Each rendered both red and blue phases across 12 screenshot samples.
+The first Android probe ran before `screen_shown`; the probe after that event
+passed. Each host's independently hashed cached scene and MP4 matched the signed
+content-addressed identities. The delivery ledger recorded one MP4 request and
+one scene request per host, without additional requests during looping.
 
+These checks establish visible playback and verified cache contents. Audio,
+captions, offline restart, and the remaining failure matrix are separate
+qualification requirements. Final readiness/review remain outstanding.
 
 ## Fast package checks
 
@@ -49,7 +57,7 @@ flutter test integration_test/sdk_test.dart -d <device-id> \
   --dart-define-from-file=/absolute/path/development-public-keys.json
 ```
 
-Provide NUXIE_IOS_API_KEY, NUXIE_ANDROID_API_KEY, NUXIE_EVENT, and NUXIE_FEATURE. The attended local launcher may additionally set `NUXIE_VALIDATE=true` to run the visible validation action on startup, together with the documented native debug-host loopback override.
+Provide NUXIE_IOS_API_KEY, NUXIE_ANDROID_API_KEY, NUXIE_EVENT, and NUXIE_FEATURE. For playback-only runs, `NUXIE_AUTOCONNECT=true` configures the Lab on startup without running Feature spending checks. The attended local launcher may additionally set `NUXIE_VALIDATE=true` to run the visible validation action on startup, together with the documented native debug-host loopback override.
 
 
 
