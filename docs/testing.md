@@ -4,9 +4,10 @@
 
 iOS `95d76d41eb4cc945cb57e5c1bcd8333ed15d55cc` and Android `4d65783e2eec5b585673041146dff887258d3c93` include
 published Apple runtime 0.10.8 and Android runtime 0.4.8, rendered-video visibility,
-and interruption recovery fixes. Native preparation, wrapper builds, playback,
-and final readiness for these revisions remain pending. Results below identify
-the earlier revisions they qualified.
+and interruption recovery fixes. Native source preparation resolved both exact
+revisions. All six package analyses and 29 Dart tests passed at these pins.
+Native wrapper builds, playback, and final readiness remain pending. Results
+below identify the earlier revisions they qualified.
 
 ## Native pin refresh — September 18, 2026
 
