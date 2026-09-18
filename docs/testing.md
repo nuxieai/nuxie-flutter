@@ -1,5 +1,21 @@
 # Testing
 
+## Native pin refresh — September 18, 2026
+
+Current pins are iOS `072e38b24df67f7e6326815ed5e126c93c8e67d7` and Android
+`1514b1cce3d64502b483c41fa551e7290caf10b0`, both pushed development commits.
+They include shared decoder admission and hidden-screen media suspension.
+The check script passed all six package analyses, 29 Dart tests, generated-bridge
+verification, and the arm64 iOS simulator example build. Its Android step
+encountered missing metadata in the machine's shared Gradle cache; rerunning
+`:app:assembleDebug` with a task-local `GRADLE_USER_HOME` passed. That cache was
+configured with the installed JDK 17 and 21 paths. The resulting APK passed
+`zipalign -c -P 16 -v 4`. Native checkout SHAs match the pins.
+
+These are build/contract checks. Signed-video playback through the Flutter
+host and final readiness/review remain outstanding at these revisions.
+
+
 ## Fast package checks
 
 In each directory under `packages/` (including `nuxie_flutter/example`), run:
@@ -82,9 +98,9 @@ The prior attended presentation screenshots remain under `screenshots/`.
 Real StoreKit / Play purchase and restore outcomes require their own provider
 qualification; the local grant test does not claim that evidence.
 
-## Video delivery candidate — September 18, 2026
+## Earlier video delivery candidate — September 18, 2026
 
-This candidate pins iOS `38428e8bb1c65605d6c982ff22b2a18d63229950` and Android
+The earlier candidate pinned iOS `38428e8bb1c65605d6c982ff22b2a18d63229950` and Android
 `e76714a76e14b8f293e782934c107a789d0a67f0`, both pushed development commits
 pending final native SDK qualification and review under
 [UNIV-3262](https://universe.basis.dev/issue/UNIV-3262).
