@@ -2,16 +2,30 @@
 
 ## Current native pins
 
-iOS `95d76d41eb4cc945cb57e5c1bcd8333ed15d55cc` and Android `4d65783e2eec5b585673041146dff887258d3c93` include
-published Apple runtime 0.10.8 and Android runtime 0.4.8, rendered-video visibility,
-and interruption recovery fixes. Native source preparation resolved both exact
-revisions. All six package analyses and 29 Dart tests passed at these pins.
-The canonical check also passed fixture hashes, unchanged Pigeon generation,
-the arm64 iOS simulator example build, and Android Debug assembly. Both SwiftPM
-lockfiles now resolve the exact iOS pin. The initial readiness run correctly
-rejected the changed lockfiles after all checks passed; final readiness and
-refreshed device playback remain pending. Results below identify the earlier
-revisions they qualified.
+iOS `48fa51d6591f61d437620abfa06eb7fcb1a64564` and Android
+`4d65783e2eec5b585673041146dff887258d3c93` include published Apple runtime
+0.10.8 and Android runtime 0.4.8, rendered-video visibility, interruption
+recovery, and preservation of leased iOS files when signed metadata conflicts
+with their verified size. Native preparation resolves both exact revisions.
+Both SwiftPM lockfiles resolve the iOS pin. The PR records final committed-tree
+readiness for these revisions.
+
+The preceding iOS `95d76d41` / same Android pin passed the canonical check:
+six package analyses, 29 Dart tests, fixture hashes, unchanged Pigeon generation,
+arm64 iOS simulator build, and Android Debug assembly. Actual cold apps on the
+iOS 26.5 simulator and approved API 36 Android emulator showed repeated red/blue
+video phases. Independently hashed cached scene and MP4 bytes matched the signed
+inventory. Both restarted and played with the fixture origin suspended. The
+Android check waited for the new process's `screen_shown` event before sampling
+16 frames with repeated transitions; startup took 71.57 seconds. Earlier
+snapshot-based observations were excluded, and an empty adb screenshot caused
+one harness failure. The iOS cache-only guard added afterward has its independent
+native regression; it does not change playback.
+
+Origin suspension is not airplane-mode qualification. These wrapper checks do
+not measure audio synchronization or establish the entire failure/resource
+matrix. Evidence is retained in the parent worktree's
+`.nuxie/task3b-flutter-final-*` logs, screenshots, sample JSON, and cache hashes.
 
 ## Native pin refresh — September 18, 2026
 
