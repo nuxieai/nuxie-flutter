@@ -1,6 +1,23 @@
 # Testing
 
-## Current native pins
+## Experience goal and eligibility pins
+
+iOS `170f8cbac97d70034a838d72a79b05e46369d3c9` and Android
+`af804278a226282e8e3abdea7c48385901b79638` implement the Experience policy
+hard cut: one optional goal, retained conversion measurement, presentation-safe
+exits, and offer-specific access checks. Milestone and old policy payloads are
+rejected. These commits passed their native SDK gates.
+
+`python3 scripts/check.py` passed at these pins: native source preparation,
+six package analyses, 29 Dart tests, fixture hashes, unchanged Pigeon generation,
+arm64 iOS simulator host build, and Android Debug assembly. The first attempt
+reached Android packaging but exhausted disk space; the complete sequential
+retry passed. Log: `/tmp/nuxie-goal-flutter-wrapper-space-retry.txt` in the parent
+qualification workspace. `git diff --check` passed. Rendered goal/eligibility
+acceptance remains part of the parent implementation qualification; these build
+checks alone do not prove that device behavior. No deployment was performed.
+
+## Previous video SDK pin qualification
 
 iOS `1e6970f306a9dac2ed567a239bf0e64a83e2d7cc` and Android
 `20f9d42f7d5fe1cba6e2426d63c24499eb966ce7` add obsolete profile-acquisition
