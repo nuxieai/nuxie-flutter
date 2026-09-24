@@ -2,18 +2,17 @@
 
 ## Experience goal and eligibility pins
 
-iOS `45af488ea507429c0da2c7659ca971ee45460efb` and Android
-`af804278a226282e8e3abdea7c48385901b79638` implement the Experience policy
+iOS `b379b06ff0e1df0bf3d9325309518b282c0a766b` and Android
+`9097dc960c6662c0108f3d7e94a661a20ff99413` implement the Experience policy
 hard cut: one optional goal, retained conversion measurement, presentation-safe
 exits, and offer-specific access checks. Milestone and old policy payloads are
 rejected. The iOS pin additionally bounds retained subscriber-delivery retries
 while preserving original eligibility and capture order.
 
-Both native SDK gates passed. `python3 scripts/check.py` passed at these pins:
-pinned source preparation, six package analyses, 29 Dart tests, fixture hashes,
-unchanged Pigeon output, arm64 iOS simulator build, and Android Debug assembly.
-The first iOS build hit a stale Xcode compiled-header cache; an Xcode clean and
-complete check rerun passed. The iOS build resolved `45af488e`.
+Both native SDK gates passed at these pins. `python3 scripts/check.py` passed
+with six package analyses, 29 Dart tests, fixture provenance and generated-bridge
+verification, an arm64 iOS simulator host build, and Android Debug assembly.
+The Swift package dependency and both example resolutions match the iOS pin.
 Rendered goal/eligibility acceptance remains part of the coordinated platform
 cutover.
 
