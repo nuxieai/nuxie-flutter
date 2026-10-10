@@ -20,12 +20,8 @@ fixtures = root / 'packages/nuxie_flutter_native/test/fixtures'
 for entry in json.loads((fixtures / 'PROVENANCE.json').read_text())['files']:
     if hashlib.sha256((fixtures / entry['file']).read_bytes()).hexdigest() != entry['sha256']:
         raise SystemExit(f"Fixture hash mismatch: {entry['file']}")
-for name in ['nuxie_flutter_platform_interface', 'nuxie_flutter_native', 'nuxie_flutter',
-             'nuxie_flutter_bloc', 'nuxie_flutter_riverpod', 'nuxie_flutter/example']:
-    package = root / 'packages' / name
-    run(['flutter', 'pub', 'get'], package)
-    run(['flutter', 'analyze'], package)
-    run(['flutter', 'test'], package)
+run([sys.executable, 'scripts/bazel/sdk.py', 'check'])
+run([sys.executable, 'scripts/bazel/sdk.py', 'build-native'])
 native = root / 'packages/nuxie_flutter_native'
 run(['dart', 'run', 'pigeon', '--input', 'pigeons/nuxie_bridge.dart'], native)
 run(['git', 'diff', '--exit-code', '--',

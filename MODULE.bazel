@@ -1,1 +1,162 @@
 module(name = "nuxie_flutter")
+
+bazel_dep(name = "rules_flutter", version = "0.0.0")
+git_override(
+    module_name = "rules_flutter",
+    remote = "https://github.com/SpencerC/rules_flutter.git",
+    commit = "32b34b2cfe6dbd3bfa5c98e740b386e0126004ff",
+    patches = ["//scripts/bazel:pub-checksums.patch"],
+    patch_strip = 1,
+)
+flutter = use_extension("@rules_flutter//flutter:extensions.bzl", "flutter")
+flutter.toolchain(flutter_version = "3.41.4", precache = ["ios", "android"])
+use_repo(flutter, "flutter_sdk", "flutter_toolchains")
+register_toolchains("@flutter_toolchains//:all")
+
+pub = use_extension("@rules_flutter//flutter:extensions.bzl", "pub")
+pub.from_file(pub_deps = "//packages/nuxie_flutter_platform_interface:pub_deps.json", archive_hashes = "//scripts/bazel:pub-archives.json")
+pub.from_file(pub_deps = "//packages/nuxie_flutter_native:pub_deps.json", archive_hashes = "//scripts/bazel:pub-archives.json")
+pub.from_file(pub_deps = "//packages/nuxie_flutter:pub_deps.json", archive_hashes = "//scripts/bazel:pub-archives.json")
+pub.from_file(pub_deps = "//packages/nuxie_flutter_bloc:pub_deps.json", archive_hashes = "//scripts/bazel:pub-archives.json")
+pub.from_file(pub_deps = "//packages/nuxie_flutter_riverpod:pub_deps.json", archive_hashes = "//scripts/bazel:pub-archives.json")
+pub.from_file(pub_deps = "//packages/nuxie_flutter/example:pub_deps.json", archive_hashes = "//scripts/bazel:pub-archives.json")
+use_repo(pub,
+    "pub__fe_analyzer_shared",
+    "pub_analyzer",
+    "pub_args",
+    "pub_async",
+    "pub_bloc",
+    "pub_bloc_test",
+    "pub_boolean_selector",
+    "pub_built_collection",
+    "pub_built_value",
+    "pub_characters",
+    "pub_cli_config",
+    "pub_clock",
+    "pub_code_builder",
+    "pub_collection",
+    "pub_convert",
+    "pub_coverage",
+    "pub_crypto",
+    "pub_cupertino_icons",
+    "pub_dart_style",
+    "pub_diff_match_patch",
+    "pub_fake_async",
+    "pub_file",
+    "pub_fixnum",
+    "pub_flutter_lints",
+    "pub_frontend_server_client",
+    "pub_glob",
+    "pub_graphs",
+    "pub_http_multi_server",
+    "pub_http_parser",
+    "pub_io",
+    "pub_leak_tracker",
+    "pub_leak_tracker_flutter_testing",
+    "pub_leak_tracker_testing",
+    "pub_lints",
+    "pub_logging",
+    "pub_matcher",
+    "pub_material_color_utilities",
+    "pub_meta",
+    "pub_mime",
+    "pub_mocktail",
+    "pub_node_preamble",
+    "pub_package_config",
+    "pub_path",
+    "pub_pigeon",
+    "pub_platform",
+    "pub_plugin_platform_interface",
+    "pub_pool",
+    "pub_process",
+    "pub_pub_semver",
+    "pub_riverpod",
+    "pub_shelf",
+    "pub_shelf_packages_handler",
+    "pub_shelf_static",
+    "pub_shelf_web_socket",
+    "pub_source_map_stack_trace",
+    "pub_source_maps",
+    "pub_source_span",
+    "pub_stack_trace",
+    "pub_state_notifier",
+    "pub_stream_channel",
+    "pub_string_scanner",
+    "pub_sync_http",
+    "pub_term_glyph",
+    "pub_test",
+    "pub_test_api",
+    "pub_test_core",
+    "pub_typed_data",
+    "pub_vector_math",
+    "pub_vm_service",
+    "pub_watcher",
+    "pub_web",
+    "pub_web_socket",
+    "pub_web_socket_channel",
+    "pub_webdriver",
+    "pub_webkit_inspection_protocol",
+    "pub_yaml",
+)
+
+# Native plugin sources compile against the same prepared products as the hosts.
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "apple_support", version = "2.8.0")
+bazel_dep(name = "rules_apple", version = "4.5.0")
+bazel_dep(name = "rules_swift", version = "4.1.0")
+bazel_dep(name = "rules_cc", version = "0.2.20")
+bazel_dep(name = "rules_android", version = "0.8.0")
+bazel_dep(name = "rules_java", version = "9.3.0")
+bazel_dep(name = "rules_kotlin", version = "2.1.9")
+single_version_override(
+    module_name = "rules_kotlin",
+    version = "2.1.9",
+    patches = ["//scripts/bazel:rules-kotlin-2.0-adapter.patch"],
+    patch_strip = 1,
+)
+bazel_dep(name = "rules_jvm_external", version = "6.9")
+
+kotlin = use_extension("@rules_kotlin//src/main/starlark/core/repositories:bzlmod_setup.bzl", "rules_kotlin_extensions")
+kotlin.kotlinc_version(version = "2.0.21", sha256 = "0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a")
+use_repo(kotlin, "com_github_jetbrains_kotlin")
+register_toolchains("//scripts/bazel:kotlin_toolchain")
+sdk = use_extension("@rules_android//rules/android_sdk_repository:rule.bzl", "android_sdk_repository_extension")
+sdk.configure(api_level = 36, build_tools_version = "36.0.0")
+use_repo(sdk, "androidsdk")
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+    name = "flutter_maven",
+    lock_file = "//scripts/bazel/locks:maven_install.json",
+    fail_if_repin_required = True,
+    artifacts = [
+        "androidx.browser:browser:1.8.0",
+        "androidx.sqlite:sqlite-framework:2.6.2",
+        "com.android.billingclient:billing:9.1.0",
+        "org.jetbrains.kotlin:kotlin-stdlib:2.1.20",
+        "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0",
+        "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.9.0",
+        "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.7.2",
+    ],
+    repositories = ["https://dl.google.com/dl/android/maven2", "https://repo.maven.apache.org/maven2"],
+    aar_import_bzl_label = "@rules_android//android:rules.bzl",
+    use_starlark_android_rules = True,
+    version_conflict_policy = "pinned",
+)
+use_repo(maven, "flutter_maven")
+native = use_extension("//scripts/bazel:native_artifacts.bzl", "native_artifacts")
+native.artifacts(
+    pins = "//:NATIVE-PINS.json",
+    android_dependencies = {
+        "@flutter_maven//:androidx_browser_browser": "androidx.browser:browser:1.8.0",
+        "@flutter_maven//:androidx_sqlite_sqlite_framework": "androidx.sqlite:sqlite-framework:2.6.2",
+        "@flutter_maven//:com_android_billingclient_billing": "com.android.billingclient:billing:9.1.0",
+        # The POM requests 2.0.21; sqlite resolves the shared runtime to 2.1.20.
+        "@flutter_maven//:org_jetbrains_kotlin_kotlin_stdlib": "org.jetbrains.kotlin:kotlin-stdlib:2.0.21",
+        "@flutter_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_android": "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0",
+        "@flutter_maven//:org_jetbrains_kotlinx_kotlinx_serialization_json_jvm": "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2",
+    },
+)
+use_repo(native, "nuxie_native_ios", "nuxie_native_android")
+engines = use_extension("//scripts/bazel:flutter_engine.bzl", "flutter_engines")
+use_repo(engines, "nuxie_flutter_engine_ios", "nuxie_flutter_engine_android")

@@ -1,0 +1,179 @@
+diff --git a/flutter/private/pub_repository.bzl b/flutter/private/pub_repository.bzl
+--- a/flutter/private/pub_repository.bzl
++++ b/flutter/private/pub_repository.bzl
+@@ -10,6 +10,7 @@
+ _DOC = """Download and setup a Dart package from pub.dev"""
+ 
+ _ATTRS = {
++    "sha256": attr.string(doc = "Locked hosted archive checksum."),
+     "package": attr.string(
+         mandatory = True,
+         doc = "Name of the package on pub.dev",
+@@ -119,6 +120,7 @@
+     repository_ctx.download(
+         url = archive_url,
+         output = archive_name,
++        sha256 = repository_ctx.attr.sha256,
+     )
+     extract_result = repository_ctx.execute(["tar", "-xzf", archive_name])
+     if extract_result.return_code != 0 and not repository_ctx.path("pubspec.yaml").exists:
+diff --git a/flutter/extensions.bzl b/flutter/extensions.bzl
+--- a/flutter/extensions.bzl
++++ b/flutter/extensions.bzl
+@@ -122,6 +122,7 @@
+ root module's declarations are read.
+ """,
+     attrs = {
++        "archive_hashes": attr.label(allow_single_file = True, doc = "Locked hosted package archive identities."),
+         "pub_deps": attr.label(
+             doc = "The `pub_deps.json` report, e.g. `//app:pub_deps.json`.",
+             mandatory = True,
+@@ -346,6 +347,7 @@
+ def _pub_extension(module_ctx):
+     """Extension implementation for pub.dev packages."""
+     repos = {}
++    archive_hashes = {}
+     scanned_roots = set()
+     dep_edges = {}
+ 
+@@ -360,6 +362,13 @@
+ 
+         # A declared report is watched as a file. The scan also watches the
+         # listing of every directory it visits; see pub_from_file.
++        for tag in mod.tags.from_file:
++            if tag.archive_hashes:
++                selected = json.decode(module_ctx.read(tag.archive_hashes))
++                for name, pin in selected.items():
++                    if name in archive_hashes and archive_hashes[name] != pin:
++                        fail("Conflicting hosted archive identities: " + name)
++                    archive_hashes[name] = pin
+         deps_files = [module_ctx.path(tag.pub_deps) for tag in mod.tags.from_file]
+         if not deps_files:
+             deps_files = _discover_pub_deps(module_ctx, root)
+@@ -405,11 +414,15 @@
+     for repo_name in sorted(repos.keys()):
+         meta = repos[repo_name]
+         package = meta["package"]
++        pin = archive_hashes.get(package, {})
++        if archive_hashes and meta["from_root"] and (not pin or pin["version"] != meta["version"]):
++            fail("Hosted archive identity differs from its pub_deps.json: " + package)
+         if package in pruned_edges:
+             pub_dev_repository(
+                 name = repo_name,
+                 package = package,
+                 version = meta["version"],
++                sha256 = pin.get("sha256", ""),
+                 hosted_deps = pruned_edges[package],
+                 hosted_deps_explicit = True,
+                 keep_vendored_cache = meta["tagged"],
+@@ -420,6 +433,7 @@
+                 name = repo_name,
+                 package = package,
+                 version = meta["version"],
++                sha256 = pin.get("sha256", ""),
+                 keep_vendored_cache = meta["tagged"],
+                 resolve_deps = meta["tagged"],
+             )
+diff --git a/flutter/private/flutter_actions.bzl b/flutter/private/flutter_actions.bzl
+--- a/flutter/private/flutter_actions.bzl
++++ b/flutter/private/flutter_actions.bzl
+@@ -222,7 +222,46 @@
+         "pub cache and were left out of package_config.json: {}\\n".format(
+             len(absent), ", ".join(sorted(absent))
+         )
+-    )"""
++    )
++
++# Nuxie: relocate only declared path dependencies in this private workspace.
++# Flutter's analyzer validates pubspec paths separately from package_config.
++def _relocate_path_dependencies():
++    import json
++    paths = {
++        entry["name"]: os.path.join(cache_root, "hosted", "pub.dev", entry["name"] + "-" + entry["version"])
++        for entry in data.get("packages", [])
++        if entry.get("source") == "path" and entry.get("name") and entry.get("version")
++    }
++    pubspec = os.path.join(workspace_root, "pubspec.yaml")
++    if not paths or not os.path.isfile(pubspec):
++        return
++    with open(pubspec, encoding="utf-8") as stream:
++        lines = stream.readlines()
++    section = None
++    dependency = None
++    for index, line in enumerate(lines):
++        stripped = line.strip()
++        if not stripped or stripped.startswith("#"):
++            continue
++        indent = len(line) - len(line.lstrip(" "))
++        if indent == 0:
++            section = stripped[:-1] if stripped.endswith(":") else None
++            dependency = None
++        elif section in ("dependencies", "dev_dependencies", "dependency_overrides"):
++            if indent == 2:
++                dependency = stripped[:-1] if stripped.endswith(":") else None
++            elif indent == 4 and dependency in paths and stripped.startswith("path:"):
++                destination = paths[dependency]
++                if not os.path.isdir(destination):
++                    raise ValueError("Declared path dependency was not staged: " + dependency)
++                lines[index] = "    path: " + json.dumps(destination) + "\\n"
++    with open(pubspec, "w", encoding="utf-8") as stream:
++        stream.writelines(lines)
++
++_relocate_path_dependencies()
++# End Nuxie path relocation.
++"""
+ 
+ # Python snippet that writes .dart_tool/package_config.json from declared
+ # pub_deps.json metadata. Inputs via env: PUB_DEPS_PATH, PUB_CACHE_ABS,
+@@ -353,8 +392,15 @@
+             path_value = description
+         elif isinstance(description, dict):
+             path_value = description.get("path") or ""
+-        if path_value:
++        # pub deps --json omits descriptions for path packages. Declared
++        # Bazel library edges stage these packages into the private pub cache.
++        staged_path = os.path.join(cache_root, "hosted", "pub.dev", name + "-" + (version or ""))
++        if os.path.isdir(staged_path):
++            add_package(name, staged_path, source, version)
++        elif path_value:
+             add_package(name, os.path.abspath(os.path.join(workspace_root, path_value)), source, version)
++        else:
++            add_package(name, staged_path, source, version)
+ 
+ """ + PACKAGE_CONFIG_RECONCILE_PY + """
+ config = dict()
+@@ -732,7 +778,7 @@
+         if s.startswith("name:") and not name:
+             name = s.split(":", 1)[1].strip().strip("'").strip('"')
+         elif s.startswith("version:") and not version:
+-            version = s.split(":", 1)[1].strip().strip("'").strip('"')
++            version = s.split(":", 1)[1].split("#", 1)[0].strip().strip("'").strip('"')
+         elif s.startswith("environment:"):
+             break
+ print(name + "|" + version)
+@@ -1046,7 +1092,7 @@
+                 value = value.strip("\\\"").strip("'")
+                 name = value
+             elif stripped.startswith("version:") and not version:
+-                value = stripped.split(":", 1)[1].strip()
++                value = stripped.split(":", 1)[1].split("#", 1)[0].strip()
+                 value = value.strip("\\\"").strip("'")
+                 version = value
+             elif stripped.startswith("environment:"):
+@@ -1259,8 +1305,15 @@
+             path_value = description
+         elif isinstance(description, dict):
+             path_value = description.get("path") or ""
+-        if path_value:
++        # pub deps --json omits descriptions for path packages. Declared
++        # Bazel library edges stage these packages into the private pub cache.
++        staged_path = os.path.join(cache_root, "hosted", "pub.dev", name + "-" + (version or ""))
++        if os.path.isdir(staged_path):
++            add_package(name, staged_path, source, version)
++        elif path_value:
+             add_package(name, os.path.abspath(os.path.join(workspace_root, path_value)), source, version)
++        else:
++            add_package(name, staged_path, source, version)
+ 
+ {package_config_reconcile_py}
+ config = dict()

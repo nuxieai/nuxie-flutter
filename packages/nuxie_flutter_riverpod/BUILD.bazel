@@ -1,0 +1,40 @@
+load("@rules_flutter//flutter:defs.bzl", "flutter_library", "flutter_test", "flutter_analyze_test")
+
+package(default_visibility = ["//visibility:public"])
+
+flutter_library(
+    name = "lib",
+    srcs = glob(["lib/**"]) + ["analysis_options.yaml"],
+    pubspec = "pubspec.yaml",
+    pub_deps = "pub_deps.json",
+    deps = [
+        "@flutter_sdk//flutter/packages/flutter",
+        "//packages/nuxie_flutter:package",
+        "@pub_riverpod//:riverpod",
+        "@flutter_sdk//flutter/packages/flutter_test",
+        "@pub_lints//:lints",
+    ],
+)
+
+
+flutter_library(
+    name = "package",
+    pub_package = True,
+    pub_payload = ":package_sources",
+    assemble_dep_caches = False,
+    srcs = glob(["lib/**"]) + ["analysis_options.yaml"],
+    pubspec = "pubspec.yaml",
+    deps = [
+        "@flutter_sdk//flutter/packages/flutter",
+        "//packages/nuxie_flutter:package",
+        "@pub_riverpod//:riverpod",
+        "@flutter_sdk//flutter/packages/flutter_test",
+        "@pub_lints//:lints",
+    ],
+)
+
+flutter_test(name = "unit_tests", srcs = glob(["test/**"]), embed = [":lib"], jobs = 2)
+flutter_analyze_test(name = "analyze", srcs = glob(["test/**"]), embed = [":lib"])
+exports_files(["pub_deps.json"])
+
+filegroup(name = "package_sources", srcs = glob(["lib/**"]) + ["pubspec.yaml"])

@@ -1,0 +1,32 @@
+package(default_visibility = ["//visibility:public"])
+
+filegroup(name = "sdk", srcs = [
+    "//packages/nuxie_flutter_platform_interface:lib",
+    "//packages/nuxie_flutter_native:lib",
+    "//packages/nuxie_flutter:lib",
+    "//packages/nuxie_flutter_bloc:lib",
+    "//packages/nuxie_flutter_riverpod:lib",
+])
+
+test_suite(name = "unit_tests", tests = [
+    "//packages/nuxie_flutter_platform_interface:unit_tests",
+    "//packages/nuxie_flutter_native:unit_tests",
+    "//packages/nuxie_flutter:unit_tests",
+    "//packages/nuxie_flutter_bloc:unit_tests",
+    "//packages/nuxie_flutter_riverpod:unit_tests",
+    "//packages/nuxie_flutter/example:unit_tests",
+])
+test_suite(name = "analysis", tests = [
+    "//packages/nuxie_flutter_platform_interface:analyze",
+    "//packages/nuxie_flutter_native:analyze",
+    "//packages/nuxie_flutter:analyze",
+    "//packages/nuxie_flutter_bloc:analyze",
+    "//packages/nuxie_flutter_riverpod:analyze",
+    "//packages/nuxie_flutter/example:analyze",
+])
+
+exports_files(["NATIVE-PINS.json"])
+alias(name = "ios_simulator_arm64", actual = "@apple_support//platforms:ios_sim_arm64")
+alias(name = "ios_simulator_x86_64", actual = "@apple_support//platforms:ios_x86_64")
+alias(name = "ios_device", actual = "@apple_support//platforms:ios_arm64")
+platform(name = "android_arm64", constraint_values = ["@platforms//os:android", "@platforms//cpu:arm64"])
