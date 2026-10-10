@@ -1,0 +1,2 @@
+# Unified diff context includes a required space on otherwise empty lines.
+scripts/bazel/pub-checksums.patch -whitespace
