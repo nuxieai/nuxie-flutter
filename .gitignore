@@ -16,4 +16,4 @@ pubspec.lock
 /.bazel-cache.local.bazelrc
 /.bazel-cache.*.tmp
 /bazel-*
-/scripts/bazel/__pycache__/
+__pycache__/
