@@ -4,7 +4,7 @@ This 0.2 source preview requires matching native source changes for coherent Fea
 
 ## Acquire the pinned sources
 
-From the Flutter repository root, run `python3 scripts/prepare-native.py`. This fetches and verifies both immutable revisions in `NATIVE-PINS.json`; it refuses to overwrite a modified checkout. The Android example resolves `.native/android` automatically. iOS resolves the pinned Git revision through SwiftPM.
+From the Flutter repository root, run `python3 scripts/prepare-native.py`. This fetches and verifies both immutable revisions in `NATIVE-PINS.json`; it refuses to overwrite a modified checkout. Bazel prepares the native bridge products under `.native/artifacts`. The Android example consumes that source-addressed AAR and its dependency POM. iOS resolves the pinned Git revision through SwiftPM for its independent consumer check.
 
 ## iOS
 
@@ -30,14 +30,15 @@ NUXIE_IOS_SDK_PATH=/absolute/path/nuxie-ios NUXIE_RUNTIME_USE_LOCAL=1 \
 
 Use API 23+ devices, compile SDK 36, Java 17+ and the Android SDK. The example uses `FlutterFragmentActivity` so the native SDK can present Experiences. Set `ANDROID_HOME` if your SDK is not automatically discovered.
 
-For local native source validation, the example's Gradle settings substitute the native dependency with a composite build when `NUXIE_ANDROID_SDK_PATH` points to the matching repository:
+For local native validation, prepare the pinned Bazel products before building the example:
 
 ```sh
+python3 scripts/prepare-native.py --platform android
 cd packages/nuxie_flutter/example
-NUXIE_ANDROID_SDK_PATH=/absolute/path/nuxie-android flutter build apk --debug
+flutter build apk --debug
 ```
 
-Keep the example's AGP and Kotlin versions aligned with the native composite build. The `0.2.0-source` coordinate is deliberately substituted by the pinned source checkout; it is not a Maven release. For another host app, copy the example’s `includeBuild` dependency-substitution block into its settings and point it at the prepared Android checkout. Registry publication requires a qualified native artifact.
+The source preview resolves `ai.nuxie:nuxie-android:0.2.0-<revision>` from the checkout's prepared Maven directory. `NUXIE_ANDROID_ARTIFACTS` can select an absolute product directory or its `sdk-artifacts.json`; the receipt must match `NATIVE-PINS.json`. The AAR contains the Bazel-built SDK and native runtime, and its POM supplies the transitive dependencies. Registry publication requires a qualified native artifact.
 
 ## Local backend validation
 

@@ -1,0 +1,27 @@
+// Source-preview consumers use the same source-addressed Bazel product as the bridge.
+def pins = new groovy.json.JsonSlurper().parse(new File(nuxieFlutterRepoRoot, 'NATIVE-PINS.json'))
+def supplied = System.getenv('NUXIE_ANDROID_ARTIFACTS')
+def product = supplied ? new File(supplied) : new File(nuxieFlutterRepoRoot, '.native/artifacts/android')
+if (product.isFile()) product = product.parentFile
+def manifest = new File(product, 'sdk-artifacts.json')
+if (!manifest.isFile()) {
+    throw new GradleException('Run python3 scripts/prepare-native.py from the Flutter repository first')
+}
+def receipt = new groovy.json.JsonSlurper().parse(manifest)
+def version = "0.2.0-${pins.android.revision}"
+if (receipt.sdk != 'android' || receipt.sourceRevision != pins.android.revision ||
+        receipt.sourceDirty != false || receipt.maven.groupId != 'ai.nuxie' ||
+        receipt.maven.artifactId != 'nuxie-android' || receipt.maven.version != version) {
+    throw new GradleException('Prepared Nuxie Android artifact does not match NATIVE-PINS.json')
+}
+def artifact = new File(product, "ai/nuxie/nuxie-android/${version}/nuxie-android-${version}")
+if (!new File("${artifact}.aar").isFile() || !new File("${artifact}.pom").isFile()) {
+    throw new GradleException('Prepared Nuxie Android AAR or dependency POM is missing')
+}
+ext.nuxieAndroidCoordinate = "ai.nuxie:nuxie-android:${version}"
+repositories {
+    maven {
+        url = uri(product)
+        content { includeModule('ai.nuxie', 'nuxie-android') }
+    }
+}
