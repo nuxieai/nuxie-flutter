@@ -12,14 +12,29 @@ if (!manifest.isFile()) {
 }
 def receipt = new groovy.json.JsonSlurper().parse(manifest)
 def version = "0.2.0-${pins.android.revision}"
-if (receipt.sdk != 'android' || receipt.sourceRevision != pins.android.revision ||
+if (receipt.schemaVersion != 1 || receipt.sdk != 'android' || receipt.sourceRevision != pins.android.revision ||
         receipt.sourceDirty != false || receipt.maven.groupId != 'ai.nuxie' ||
         receipt.maven.artifactId != 'nuxie-android' || receipt.maven.version != version) {
     throw new GradleException('Prepared Nuxie Android artifact does not match NATIVE-PINS.json')
 }
 def artifact = new File(product, "ai/nuxie/nuxie-android/${version}/nuxie-android-${version}")
-if (!new File("${artifact}.aar").isFile() || !new File("${artifact}.pom").isFile()) {
-    throw new GradleException('Prepared Nuxie Android AAR or dependency POM is missing')
+for (extension in ['aar', 'pom', 'module']) {
+    def path = "ai/nuxie/nuxie-android/${version}/nuxie-android-${version}.${extension}"
+    def file = new File(product, path)
+    def records = receipt.artifacts.findAll { it.path == path }
+    if (records.size() != 1 || !file.isFile() ||
+            java.nio.file.Files.isSymbolicLink(file.toPath()) || records[0].size != file.length()) {
+        throw new GradleException("Prepared Nuxie Android artifact inventory changed: ${path}")
+    }
+    def digest = java.security.MessageDigest.getInstance('SHA-256')
+    file.withInputStream { stream ->
+        byte[] buffer = new byte[1024 * 1024]
+        int count
+        while ((count = stream.read(buffer)) != -1) digest.update(buffer, 0, count)
+    }
+    if (digest.digest().encodeHex().toString() != records[0].sha256) {
+        throw new GradleException("Prepared Nuxie Android artifact checksum changed: ${path}")
+    }
 }
 ext.nuxieAndroidCoordinate = "ai.nuxie:nuxie-android:${version}"
 repositories {
