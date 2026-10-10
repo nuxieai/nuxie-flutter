@@ -130,7 +130,6 @@ maven.install(
     lock_file = "//scripts/bazel/locks:maven_install.json",
     fail_if_repin_required = True,
     artifacts = [
-        "androidx.browser:browser:1.8.0",
         "androidx.sqlite:sqlite-framework:2.6.2",
         "com.android.billingclient:billing:9.1.0",
         "org.jetbrains.kotlin:kotlin-stdlib:2.1.20",
@@ -148,7 +147,6 @@ native = use_extension("//scripts/bazel:native_artifacts.bzl", "native_artifacts
 native.artifacts(
     pins = "//:NATIVE-PINS.json",
     android_dependencies = {
-        "@flutter_maven//:androidx_browser_browser": "androidx.browser:browser:1.8.0",
         "@flutter_maven//:androidx_sqlite_sqlite_framework": "androidx.sqlite:sqlite-framework:2.6.2",
         "@flutter_maven//:com_android_billingclient_billing": "com.android.billingclient:billing:9.1.0",
         # The POM requests 2.0.21; sqlite resolves the shared runtime to 2.1.20.
