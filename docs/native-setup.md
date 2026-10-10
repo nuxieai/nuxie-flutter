@@ -28,7 +28,7 @@ NUXIE_IOS_SDK_PATH=/absolute/path/nuxie-ios NUXIE_RUNTIME_USE_LOCAL=1 \
 
 ## Android
 
-Use API 23+ devices, compile SDK 36, Java 17+ and the Android SDK. The example uses `FlutterFragmentActivity` so the native SDK can present Experiences. Set `ANDROID_HOME` if your SDK is not automatically discovered.
+Use API 23+ devices, compile SDK 36, Java 21 and the Android SDK. The example uses `FlutterFragmentActivity` so the native SDK can present Experiences. Set `ANDROID_HOME` if your SDK is not automatically discovered.
 
 For local native validation, prepare the pinned Bazel products before building the example:
 
