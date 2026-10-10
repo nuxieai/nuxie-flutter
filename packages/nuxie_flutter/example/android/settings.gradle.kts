@@ -24,15 +24,3 @@ plugins {
 }
 
 include(":app")
-
-// The source preview resolves the exact checkout prepared from NATIVE-PINS.json.
-val nativePath = System.getenv("NUXIE_ANDROID_SDK_PATH")
-    ?: file("../../../../.native/android").absolutePath
-require(file(nativePath).isDirectory) {
-    "Run python3 scripts/prepare-native.py from the Flutter repository first"
-}
-includeBuild(nativePath) {
-    dependencySubstitution {
-        substitute(module("ai.nuxie:nuxie-android")).using(project(":nuxie-android"))
-    }
-}

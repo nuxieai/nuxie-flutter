@@ -43,6 +43,9 @@ allprojects {
 apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
 
+ext.nuxieFlutterRepoRoot = file('../../..')
+apply from: new File(nuxieFlutterRepoRoot, 'scripts/gradle/native-sdk.gradle')
+
 android {
     namespace = "io.nuxie.flutter.nativeplugin"
     compileSdk = 36
@@ -72,5 +75,5 @@ dependencies {
     }
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
-    implementation("ai.nuxie:nuxie-android:0.2.0-source")
+    implementation(nuxieAndroidCoordinate)
 }

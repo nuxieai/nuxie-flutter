@@ -43,6 +43,9 @@ flutter {
     source = "../.."
 }
 
+extra["nuxieFlutterRepoRoot"] = file("../../../../..")
+apply(from = file("../../../../../scripts/gradle/native-sdk.gradle"))
+
 dependencies {
-    implementation("ai.nuxie:nuxie-android:0.2.0-source")
+    implementation(extra["nuxieAndroidCoordinate"] as String)
 }
