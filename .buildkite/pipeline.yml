@@ -5,26 +5,12 @@ steps:
   - label: ":flutter: Analyze and test packages"
     command: |
       set -euo pipefail
+      source scripts/bazel/ci-cache.sh
       export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
       export ANDROID_SDK_ROOT="$ANDROID_HOME"
-      flutter_launcher="$(realpath "$(command -v flutter)")"
-      installed_flutter_root="$(cd "$(dirname "$flutter_launcher")/.." && pwd)"
-      flutter_sdk_parent="$(mktemp -d "${TMPDIR:-/tmp}/nuxie-flutter-sdk.XXXXXX")"
-      trap 'rm -rf "$flutter_sdk_parent"' EXIT
-      cp -cR "$installed_flutter_root" "$flutter_sdk_parent/flutter"
-      export FLUTTER_ROOT="$flutter_sdk_parent/flutter"
-      flutter_tool=("$FLUTTER_ROOT/bin/flutter" --no-version-check)
-      for package in packages/*; do
-        [[ -f "$package/pubspec.yaml" ]] || continue
-        (
-          cd "$package"
-          "${flutter_tool[@]}" pub get
-          "${flutter_tool[@]}" analyze
-          if [[ -d test ]]; then
-            "${flutter_tool[@]}" test
-          fi
-        )
-      done
+      export NUXIE_BAZEL_BATCH=1
+      python3 scripts/bazel/sdk.py check
+      python3 scripts/bazel/sdk.py build-native
     agents:
       queue: nuxie-pr
       nuxie-platform: macos

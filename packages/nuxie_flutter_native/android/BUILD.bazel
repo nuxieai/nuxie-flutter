@@ -1,0 +1,14 @@
+load("@rules_kotlin//kotlin:android.bzl", "kt_android_library")
+
+kt_android_library(
+    name = "bridge",
+    srcs = glob(["src/main/kotlin/**/*.kt"]),
+    manifest = "src/main/AndroidManifest.xml",
+    custom_package = "io.nuxie.flutter.nativeplugin",
+    deps = [
+        "@nuxie_native_android//:sdk",
+        "@nuxie_flutter_engine_android//:embedding",
+        "@flutter_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_android",
+    ],
+    visibility = ["//visibility:public"],
+)

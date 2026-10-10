@@ -1,23 +1,46 @@
-# Bazel worktree caches
+# Bazel SDK builds
 
-The Bazel workspace imports `.bazel-cache.bazelrc`, matching `nuxie-runtime`
-and all Nuxie SDKs. Action products, dependency downloads, and fetched
-repository trees share `~/.cache/nuxie/bazel` across Git worktrees.
+Use `python3 scripts/bazel/sdk.py build|test|analyze|check` for the Dart package
+graph. All six package/test workspaces use Flutter3.41.4, checksum-pinned by
+`rules_flutter` at the commit in `MODULE.bazel`. Hosted dependency versions come from each package's `pub_deps.json`; archive
+checksums are recorded in `scripts/bazel/pub-archives.json` from the owning
+Flutter lockfiles. A small patch to the pinned rules verifies those checksums
+on download, handles inline comments in hosted package versions, and relocates
+declared sibling package paths inside private build/test workspaces. Dart
+builds and tests do not require an Android SDK. Path dependencies remain direct
+Bazel edges. To refresh dependencies
+intentionally, run Flutter3.41.4's `pub get` and `pub deps --json` in the affected
+package, regenerate its report, then run `python3 scripts/bazel/update-pub-archives.py`.
+Review the archive lock, BUILD dependency edges and MODULE imports together.
 
-Bazel derives a separate output base from each checkout's path. Its `bazel-*`
-links and build outputs remain specific to that checkout, while matching actions
-can be restored from the shared cache.
+`python3 scripts/bazel/sdk.py build-native` prepares the exact NATIVE-PINS.json
+revisions through their native Bazel producers, then compiles the generated
+Pigeon/owned Swift and Kotlin plugin sources. They import the prepared native
+SDK products and the same Flutter SDK's engine interfaces. Prepared products
+stay under this checkout's `.native/artifacts/`. Set absolute
+`NUXIE_IOS_ARTIFACTS`/`NUXIE_ANDROID_ARTIFACTS` to reuse already-prepared products;
+their revision, inventory, hashes and platform are verified before compilation.
 
-Use `scripts/bazel/bazel.sh` to run the pinned Bazel version. Set an absolute
-`NUXIE_BAZEL_CACHE_DIR` to relocate only the reusable caches. A shared
-`NUXIE_BAZEL_OUTPUT_USER_ROOT` still contains separate output bases for each
-checkout; an explicit `--output_base` must be unique to the checkout.
+`python3 scripts/check.py` retains fixture hashes, Pigeon regeneration checks,
+and real iOS/Android example application builds as independent consumer
+compatibility checks. Buildkite invokes the same Bazel package and native bridge
+frontends used locally. Bazel9.3.0 is pinned by `.bazelversion`; the launcher has
+a checksummed standalone Bazelisk fallback.
 
-Verify the cache override without compiling native sources:
+The SDK, nuxie-runtime and the other SDKs share reusable action, download and
+repository-content caches under `~/.cache/nuxie/bazel`. An absolute
+`NUXIE_BAZEL_CACHE_DIR` relocates these three caches. Buildkite sources
+`ci-cache.sh` to use the root/runtime per-agent cache under
+`~/.nuxie-ci/editor-cargo-target/<agent>/bazel-shared-cache`.
+
+Each checkout gets its own Bazel output base. A shared
+`NUXIE_BAZEL_OUTPUT_USER_ROOT` contains separate bases; do not set the same
+`--output_base` for different worktrees. Generated Dart workspaces, native
+products and test scratch files stay isolated. Set `NUXIE_BAZEL_JOBS=2` to bound
+local compiler concurrency.
+
+Run the receipt, source-preservation and cache frontend oracles with:
 
 ```sh
-python3 -B -m unittest discover -s scripts/bazel -p 'test_cache.py'
+python3 -B -m unittest discover -s scripts/bazel -p 'test_*.py'
 ```
-
-This workspace establishes the cache policy for the SDK's Bazel migration.
-Existing host-language build and qualification commands remain available.
