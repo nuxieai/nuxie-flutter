@@ -13,3 +13,7 @@ pubspec.lock
 .DS_Store
 
 .native/
+/.bazel-cache.local.bazelrc
+/.bazel-cache.*.tmp
+/bazel-*
+/scripts/bazel/__pycache__/
