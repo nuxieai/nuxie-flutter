@@ -115,7 +115,7 @@ diff --git a/flutter/private/flutter_actions.bzl b/flutter/private/flutter_actio
 +                destination = paths[dependency]
 +                if not os.path.isdir(destination):
 +                    raise ValueError("Declared path dependency was not staged: " + dependency)
-+                lines[index] = "    path: " + json.dumps(destination) + "\\n"
++                lines[index] = "    path: " + json.dumps(os.path.relpath(destination, workspace_root)) + "\\n"
 +    with open(pubspec, "w", encoding="utf-8") as stream:
 +        stream.writelines(lines)
 +
