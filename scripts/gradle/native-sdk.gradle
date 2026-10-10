@@ -2,6 +2,9 @@
 def pins = new groovy.json.JsonSlurper().parse(new File(nuxieFlutterRepoRoot, 'NATIVE-PINS.json'))
 def supplied = System.getenv('NUXIE_ANDROID_ARTIFACTS')
 def product = supplied ? new File(supplied) : new File(nuxieFlutterRepoRoot, '.native/artifacts/android')
+if (supplied && !product.isAbsolute()) {
+    throw new GradleException('NUXIE_ANDROID_ARTIFACTS must be an absolute product path')
+}
 if (product.isFile()) product = product.parentFile
 def manifest = new File(product, 'sdk-artifacts.json')
 if (!manifest.isFile()) {
