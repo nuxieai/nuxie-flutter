@@ -18,4 +18,4 @@ define_kt_toolchain(
 
 exports_files(["pub-checksums.patch", "pub-archives.json"])
 
-exports_files(["rules-kotlin-2.0-adapter.patch"])
+exports_files(["rules-kotlin-2.0-adapter.patch", "rules-android-min-sdk-23.patch"])
