@@ -1,5 +1,6 @@
 """Run the pinned rules' embedded Python against isolated package fixtures."""
 import ast
+import json
 import os
 from pathlib import Path
 import tempfile
@@ -50,7 +51,11 @@ class PathDependencyTests(unittest.TestCase):
                 pubspec = self.workspace / "pubspec.yaml"
                 pubspec.write_text(original)
                 self.run_relocation()
-                self.assertIn(f'    path: "{self.package}"\n', pubspec.read_text())
+                path_line = next(line for line in pubspec.read_text().splitlines()
+                                 if line.startswith("    path: \""))
+                dependency_path = json.loads(path_line.split(":", 1)[1])
+                self.assertEqual((self.workspace / dependency_path).resolve(), self.package.resolve())
+                self.assertFalse(Path(dependency_path).is_absolute())
                 self.assertIn("    path: ../untouched\n", pubspec.read_text())
                 self.assertTrue(self.package.is_dir())
                 self.assertEqual(source.read_text(), original)
@@ -63,6 +68,24 @@ class PathDependencyTests(unittest.TestCase):
         self.dependencies["packages"][0]["version"] = "9.0.0"
         with self.assertRaisesRegex(ValueError, "was not staged: sibling"):
             self.run_relocation()
+
+    def test_relocated_workspace_is_reusable_in_another_worktree(self):
+        outputs = []
+        for name in ("first checkout", "second checkout"):
+            workspace = self.root / name / "workspace"
+            cache = self.root / name / "cache"
+            workspace.mkdir(parents=True)
+            (cache / "hosted/pub.dev/sibling-0.2.0").mkdir(parents=True)
+            pubspec = workspace / "pubspec.yaml"
+            pubspec.write_text("dependencies:\n  sibling:\n    path: ../source\n")
+            exec(relocation_code(), {
+                "os": os, "data": self.dependencies,
+                "cache_root": str(cache), "workspace_root": str(workspace),
+            })
+            outputs.append(pubspec.read_bytes())
+            relative = json.loads(pubspec.read_text().split("path:", 1)[1])
+            self.assertTrue((workspace / relative).is_dir())
+        self.assertEqual(outputs[0], outputs[1])
 
     def test_hosted_dependency_does_not_rewrite_a_source_path(self):
         self.dependencies["packages"][0]["source"] = "hosted"
