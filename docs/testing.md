@@ -2,12 +2,35 @@
 
 ## Bazel build migration
 
-The migration currently pins landed iOS
-`615a31bd03483e79a8590f8408b035659581f8f7`. Android remains at its recorded
-revision until the native Bazel migration lands. Targeted preparation tests
-and imports of the original Debug and Release iOS producer receipts passed.
-Native bridge compilation, the complete wrapper readiness command, example
-application builds and SwiftPM lock refresh remain pending at the new pins.
+The migration pins landed iOS
+`615a31bd03483e79a8590f8408b035659581f8f7` and Android
+`7ebe2d72570b169712fd913fd2c5b2de4bf2848d`. Both checked-in SwiftPM locks
+resolve that exact iOS revision. Bazel compiles the six Dart workspaces and
+their Swift/Kotlin native bridges; local development and Buildkite share
+reusable caches while each worktree keeps its own outputs.
+
+`python3 scripts/check.py` passed on clean source
+`0b52abbe99d98dad3c1f40b18ec79387435b9ab9` in 228.782 seconds: verified
+native preparation, six package analyses and 29 original Dart cases (reused
+from Bazel's cache), direct Swift/Kotlin bridge builds, fixture hashes,
+unchanged Pigeon outputs, and the original arm64 iOS simulator and Android
+Debug example builds. The Android example executed 85 of its 90 Gradle tasks.
+Its Kotlin consumer reads the applying project's validated Maven coordinate;
+the shared Groovy helper publishes it as a String. The offline Gradle consumer
+regression reproduces both the property-scope and Groovy/Kotlin type failures
+before the fix, and passes for both Kotlin and Groovy after it.
+
+The portable helper sweep passed 29 cases, with two real Gradle integration
+cases explicitly skipped; both integration cases passed separately with
+`GRADLE_BIN` set. Qualification reused the original Debug/Release iOS and
+Android producer receipts without changing their bytes. The Android APK
+contains all six producer JNI libraries: both CAPI libraries are byte-identical,
+and the other four retain their GNU build IDs after debug-symbol stripping.
+
+Logs, test XML, receipt hashes and product proofs are retained outside build
+outputs under `/Users/levi/.codex/qualification/flutter-bazel-20261011/`.
+This establishes build and consumer compatibility; device playback, store
+purchases and release signing were not repeated.
 
 Historical qualification below remains tied to its recorded revisions.
 
