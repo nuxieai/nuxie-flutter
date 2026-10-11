@@ -55,11 +55,37 @@ both native canonical profile consumers require an authenticated cache validator
 Its transport ledger uses the native `distinct_id` and `idempotency_key` wire
 fields, while curated activities retain their public `experience_version` alias.
 
-Build the example with `--target lib/v3_probe_main.dart` and
-`--dart-define=NUXIE_V3_PROBE_URL=http://127.0.0.1:<printed-port>`.
-Leave `NUXIE_VALIDATE` and `NUXIE_AUTOCONNECT` unset or false; the explicit
-entrypoint refuses conflicting ordinary Lab automation.
-Launch its iOS Debug host with `NUXIE_LOCAL_INGEST_URL` set to the same endpoint.
+From `packages/nuxie_flutter/example`, configure the explicit Dart entrypoint
+with the server's printed port, then build the generic simulator host:
+
+```sh
+flutter build ios --simulator --debug --config-only \
+  --target lib/v3_probe_main.dart \
+  --dart-define=NUXIE_V3_PROBE_URL=http://127.0.0.1:<printed-port> \
+  --dart-define=NUXIE_VALIDATE=false --dart-define=NUXIE_AUTOCONNECT=false
+cd ios
+xcodebuild -workspace Runner.xcworkspace -scheme Runner \
+  -configuration Debug -sdk iphonesimulator \
+  -destination 'generic/platform=iOS Simulator' \
+  ARCHS=arm64 CODE_SIGNING_ALLOWED=NO -jobs 1 build
+```
+
+Use `ARCHS=x86_64` on an Intel host. The explicit entrypoint refuses conflicting
+ordinary Lab automation. Install the resulting `Runner.app` on the owning
+simulator and launch it with the native endpoint matching the compiled Dart URL:
+
+```sh
+xcrun simctl install "$DEVICE_UDID" /absolute/Debug-iphonesimulator/Runner.app
+SIMCTL_CHILD_NUXIE_LOCAL_INGEST_URL=http://127.0.0.1:<printed-port> \
+  xcrun simctl launch --terminate-running-process "$DEVICE_UDID" \
+  io.nuxie.nuxieFlutterExample
+```
+
+Retain the embedded `kernel_blob.bin` and generated Flutter configuration with
+the app inventory. Verify that the kernel embeds the selected entrypoint, probe
+and public Dart client source bytes; configuration alone does not establish which
+Dart code ran. Retain the native source revision, actual imported runtime/archive
+checksums and linker inputs separately.
 Android Debug hosts use the `nuxieLocalIngestUrl` Activity intent extra and
 `http://10.0.2.2:<port>` for both endpoint selections.
 
@@ -72,7 +98,9 @@ Use a newly created, task-owned simulator or an explicitly leased device. Retain
 the device UDID, Git commit, package/lock hashes, native receipts, actual built
 app hash, launch command and returned process ID. For each case, stop the prior
 app, restart the server with a new evidence directory and fresh API key/customer,
-then launch a fresh app process. Do not reset another worktree's simulator.
+then launch a fresh app process. Pass `--port <printed-port>` to subsequent case
+servers so the retained app's compiled endpoint remains valid. Do not reset
+another worktree's simulator.
 
 On iOS, capture the case's start/end times and the returned process ID, then
 retain only that process's unified log in that time interval:
