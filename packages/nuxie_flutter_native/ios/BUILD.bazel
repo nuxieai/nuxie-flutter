@@ -5,6 +5,7 @@ swift_library(
     srcs = glob(["nuxie_flutter_native/Sources/nuxie_flutter_native/*.swift"]),
     module_name = "nuxie_flutter_native",
     deps = ["@nuxie_native_ios//:sdk", "@nuxie_flutter_engine_ios//:embedding"],
+    data = ["@nuxie_native_ios//:resources"],
     target_compatible_with = ["@platforms//os:ios"],
     visibility = ["//visibility:public"],
 )
