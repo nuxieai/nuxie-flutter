@@ -79,23 +79,38 @@ Future<void> runV3Probe(NuxieClient client, String endpoint) async {
   } catch (error) {
     failure = error.toString();
   } finally {
-    final request = await http.postUrl(base.resolve('/observations'));
-    request.headers.contentType = ContentType.json;
-    final bytes = utf8.encode(jsonEncode({'caseName': config['caseName'], 'consumer': config['consumer'],
-      'platform': config['platform'], 'customerId': config['customerId'],
-      'nativeVersion': nativeVersion, 'checkpoints': checkpoints, 'activities': activities,
-      'appActions': actions, 'errors': errors, 'states': states,
-      'finalFeatureState': client.features.value.state.name, 'failure': failure}));
-    request.contentLength = bytes.length;
-    request.add(bytes);
-    final response = await request.close();
-    await response.drain<void>();
-    if (response.statusCode != 200) throw StateError('Could not retain native v3 observations');
-    client.features.removeListener(captureState);
-    await activitySubscription.cancel();
-    await actionSubscription.cancel();
-    await client.shutdown();
-    http.close();
+    final finalFeatureState = client.features.value.state.name;
+    Future<void> teardown(String name, FutureOr<void> Function() action) async {
+      try { await action(); }
+      catch (error) {
+        final message = 'Teardown $name failed: $error';
+        failure = failure == null ? message : '$failure; $message';
+      }
+    }
+    await teardown('feature-listener', () => client.features.removeListener(captureState));
+    await teardown('activity-subscription', activitySubscription.cancel);
+    await teardown('action-subscription', actionSubscription.cancel);
+    await teardown('native-shutdown', () async {
+      await client.shutdown();
+      checkpoints.add('native-shutdown-completed');
+    });
+    try {
+      final request = await http.postUrl(base.resolve('/observations'));
+      request.headers.contentType = ContentType.json;
+      final bytes = utf8.encode(jsonEncode({'caseName': config['caseName'], 'consumer': config['consumer'],
+        'platform': config['platform'], 'customerId': config['customerId'],
+        'nativeVersion': nativeVersion, 'checkpoints': checkpoints, 'activities': activities,
+        'appActions': actions, 'errors': errors, 'states': states,
+        'finalFeatureState': finalFeatureState, 'failure': failure}));
+      request.contentLength = bytes.length;
+      request.add(bytes);
+      final response = await request.close();
+      await response.drain<void>();
+      if (response.statusCode != 200) throw StateError('Could not retain native v3 observations');
+    } finally {
+      http.close();
+    }
   }
-  if (failure != null) throw StateError(failure);
+  final completedFailure = failure;
+  if (completedFailure != null) throw StateError(completedFailure);
 }
