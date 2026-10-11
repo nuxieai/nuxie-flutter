@@ -36,7 +36,7 @@ for (extension in ['aar', 'pom', 'module']) {
         throw new GradleException("Prepared Nuxie Android artifact checksum changed: ${path}")
     }
 }
-ext.nuxieAndroidCoordinate = "ai.nuxie:nuxie-android:${version}"
+ext.nuxieAndroidCoordinate = "ai.nuxie:nuxie-android:${version}".toString()
 repositories {
     maven {
         url = uri(product)
