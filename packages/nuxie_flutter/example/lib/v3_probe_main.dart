@@ -12,6 +12,9 @@ void main() {
   if (!kDebugMode || endpoint.isEmpty) {
     throw StateError('Use a Debug build with NUXIE_V3_PROBE_URL for native v3 qualification');
   }
+  if (const bool.fromEnvironment('NUXIE_VALIDATE') || const bool.fromEnvironment('NUXIE_AUTOCONNECT')) {
+    throw StateError('Disable ordinary Lab automation for the explicit native v3 probe');
+  }
   runApp(NuxieExample(client: Nuxie.instance));
   WidgetsBinding.instance.addPostFrameCallback((_) {
     unawaited(runV3Probe(Nuxie.instance, endpoint).catchError((Object error) {

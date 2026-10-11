@@ -54,6 +54,8 @@ fields, while curated activities retain their public `experience_version` alias.
 
 Build the example with `--target lib/v3_probe_main.dart` and
 `--dart-define=NUXIE_V3_PROBE_URL=http://127.0.0.1:<printed-port>`.
+Leave `NUXIE_VALIDATE` and `NUXIE_AUTOCONNECT` unset or false; the explicit
+entrypoint refuses conflicting ordinary Lab automation.
 Launch its iOS Debug host with `NUXIE_LOCAL_INGEST_URL` set to the same endpoint.
 Android Debug hosts use the `nuxieLocalIngestUrl` Activity intent extra and
 `http://10.0.2.2:<port>` for both endpoint selections.
