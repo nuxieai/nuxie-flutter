@@ -2,10 +2,11 @@
 
 ## Bazel build migration
 
-The migration pins landed iOS
+The build migration qualified landed iOS
 `615a31bd03483e79a8590f8408b035659581f8f7` and Android
-`7ebe2d72570b169712fd913fd2c5b2de4bf2848d`. Both checked-in SwiftPM locks
-resolve that exact iOS revision. Bazel compiles the six Dart workspaces and
+`7ebe2d72570b169712fd913fd2c5b2de4bf2848d`. Its SwiftPM locks resolved
+that exact iOS revision. These are historical native v2 products;
+[native v3 consumers](native-v3.md) use the current pins. Bazel compiles the six Dart workspaces and
 their Swift/Kotlin native bridges; local development and Buildkite share
 reusable caches while each worktree keeps its own outputs.
 
