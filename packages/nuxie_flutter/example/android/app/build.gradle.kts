@@ -47,5 +47,5 @@ extra["nuxieFlutterRepoRoot"] = file("../../../../..")
 apply(from = file("../../../../../scripts/gradle/native-sdk.gradle"))
 
 dependencies {
-    implementation(extra["nuxieAndroidCoordinate"] as String)
+    implementation(project.extra["nuxieAndroidCoordinate"] as String)
 }
