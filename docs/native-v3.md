@@ -18,6 +18,9 @@ Preparation validates source revisions and checksums; never relabel another
 revision's products. Bazel caches remain shared across worktrees while product
 staging and output bases belong to this checkout. Regenerate both tracked example
 SwiftPM locks through the Xcode resolver when the native pin changes.
+The native Android v3 POM also adds `androidx.browser:browser:1.8.0`.
+Declare producer POM dependencies in `MODULE.bazel` and regenerate the genuine
+Maven lock with `REPIN=1 scripts/bazel/bazel.sh run @flutter_maven//:pin`.
 
 The public native configure, identify and trigger signatures remain compatible.
 Both bridges already forward activity names/properties generically, including
