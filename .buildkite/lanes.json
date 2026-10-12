@@ -1,0 +1,24 @@
+{
+  "env": {
+    "CI": "1"
+  },
+  "steps": [
+    {
+      "label": ":flutter: Analyze and test packages",
+      "command": "set -euo pipefail\nsource scripts/bazel/ci-cache.sh\nexport JAVA_HOME=\"${JAVA_HOME:-/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home}\"\nexport ANDROID_HOME=/opt/homebrew/share/android-commandlinetools\nexport ANDROID_SDK_ROOT=\"$ANDROID_HOME\"\nexport PATH=\"$JAVA_HOME/bin:$PATH\"\n\"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager\" \\\n  \"platforms;android-36\" \"build-tools;36.0.0\" \"ndk;29.0.14206865\" \\\n  \"cmake;3.22.1\"\nexport NUXIE_BAZEL_BATCH=1\npython3 scripts/bazel/sdk.py check\npython3 scripts/bazel/sdk.py build-native\n",
+      "agents": {
+        "queue": "nuxie-pr",
+        "nuxie-platform": "macos"
+      },
+      "timeout_in_minutes": 90,
+      "retry": {
+        "automatic": [
+          {
+            "exit_status": -1,
+            "limit": 1
+          }
+        ]
+      }
+    }
+  ]
+}
