@@ -2,6 +2,7 @@
 import json
 import hashlib
 import os
+import platform
 from pathlib import Path
 import subprocess
 import tempfile
@@ -13,7 +14,7 @@ from native_prepare import checkout, prepare
 
 class NativePreparationTests(unittest.TestCase):
     def setUp(self):
-        environment = patch.dict(os.environ, {'NUXIE_ANDROID_ARTIFACTS': '', 'NUXIE_IOS_ARTIFACTS': '',
+        environment = patch.dict(os.environ, {'NUXIE_CI_RUNNER_POLICY_VERSION': '1', 'NUXIE_NATIVE_PREPARED_ONLY': '0', 'NUXIE_ANDROID_ARTIFACTS': '', 'NUXIE_IOS_ARTIFACTS': '',
                                               'NUXIE_IOS_DEBUG_ARTIFACTS': '', 'NUXIE_IOS_RELEASE_ARTIFACTS': ''})
         environment.start()
         self.addCleanup(environment.stop)
@@ -29,12 +30,25 @@ class NativePreparationTests(unittest.TestCase):
         producer.write_text('''import json
 import hashlib
 import os
+import platform
 from pathlib import Path
 import sys
 args = sys.argv[1:]
 out = Path(args[args.index('--output') + 1])
 out.mkdir(parents=True, exist_ok=True)
 (out / 'invocation.json').write_text(json.dumps(args))
+import subprocess
+revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+sdk = 'ios' if '--configuration' in args else 'android'
+artifact = out / 'product.a'
+artifact.write_bytes(b'synthetic prepared product')
+receipt = {'schemaVersion': 1, 'sdk': sdk, 'sourceRevision': revision, 'sourceDirty': False,
+           'artifacts': [{'path': artifact.name, 'size': artifact.stat().st_size,
+                          'sha256': hashlib.sha256(artifact.read_bytes()).hexdigest()}]}
+if sdk == 'ios':
+    receipt['products'] = [{'platform': 'ios-simulator', 'configuration': args[args.index('--configuration') + 1],
+                            'architectures': [args[args.index('--architecture') + 1]]}]
+(out / 'sdk-artifacts.json').write_text(json.dumps(receipt))
 ''')
         (self.upstream / 'SDK.txt').write_text('original SDK source\n')
         self.git('add', '.', cwd=self.upstream)
@@ -103,7 +117,7 @@ out.mkdir(parents=True, exist_ok=True)
         (products / 'product.a').write_bytes(artifact)
         manifest.write_text(json.dumps({
             'schemaVersion': 1, 'sdk': 'ios', 'sourceRevision': revision or self.revision, 'sourceDirty': False,
-            'products': [{'platform': 'ios-simulator', 'configuration': configuration}],
+            'products': [{'platform': 'ios-simulator', 'configuration': configuration, 'architectures': [platform.machine()]}],
             'artifacts': [{'path': 'product.a', 'size': len(artifact), 'sha256': hashlib.sha256(artifact).hexdigest()}],
         }))
         (self.root / 'NATIVE-PINS.json').write_text(json.dumps({'ios': self.pin}))
@@ -135,6 +149,17 @@ out.mkdir(parents=True, exist_ok=True)
         with patch.dict(os.environ, {'NUXIE_IOS_DEBUG_ARTIFACTS': str(wrong), 'NUXIE_IOS_ARTIFACTS': str(fallback)}):
             with self.assertRaisesRegex(ValueError, 'requested Debug configuration'):
                 prepare(self.root, ['ios'], configuration='Debug')
+        self.assertFalse((self.root / '.native/ios').exists())
+
+    def test_wrong_ios_platform_or_architecture_cannot_select_another_preparation(self):
+        selected = self.ios_fixture('selected-slice', 'Debug')
+        original = json.loads(selected.read_text())
+        for change in [{'platform': 'ios-device'}, {'architectures': ['wrong-host']}]:
+            value = dict(original, products=[dict(original['products'][0], **change)])
+            selected.write_text(json.dumps(value))
+            with self.subTest(change=change), patch.dict(os.environ, {'NUXIE_IOS_DEBUG_ARTIFACTS': str(selected)}):
+                with self.assertRaisesRegex(ValueError, 'simulator platform and host architecture'):
+                    prepare(self.root, ['ios'])
         self.assertFalse((self.root / '.native/ios').exists())
 
     def test_wrong_ios_revision_does_not_fall_back(self):
