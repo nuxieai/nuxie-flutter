@@ -531,7 +531,7 @@
     },
     {
       "name": "nuxie_flutter",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "kind": "direct",
       "source": "path",
       "dependencies": [
@@ -547,7 +547,7 @@
     },
     {
       "name": "nuxie_flutter_native",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "kind": "transitive",
       "source": "path",
       "dependencies": [
@@ -561,7 +561,7 @@
     },
     {
       "name": "nuxie_flutter_platform_interface",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "kind": "transitive",
       "source": "path",
       "dependencies": [

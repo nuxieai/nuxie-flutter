@@ -1,6 +1,6 @@
 name: nuxie_flutter_platform_interface
 description: Platform interface and shared models for nuxie_flutter.
-version: 0.2.0
+version: 0.2.1
 publish_to: none
 
 environment:

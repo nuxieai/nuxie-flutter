@@ -70,7 +70,7 @@ final class Nuxie implements NuxieClient {
   String? _session;
   int _revision = -1;
   int _identityGeneration = -1;
-  NuxieVersions _versions = const NuxieVersions(wrapper: '0.2.0');
+  NuxieVersions _versions = const NuxieVersions(wrapper: '0.2.1');
   @override
   bool get isConfigured => _configured;
   @override
@@ -176,7 +176,7 @@ final class Nuxie implements NuxieClient {
           apiKey: apiKey,
           options: configuration,
           usingPurchaseController: configuration.billing is ExternalBilling,
-          wrapperVersion: '0.2.0',
+          wrapperVersion: '0.2.1',
           session: session,
         ),
       );
