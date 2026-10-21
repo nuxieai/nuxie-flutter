@@ -7,17 +7,17 @@ published Experiences. The Flutter SDK connects directly to Nuxie's iOS and Andr
 SDKs: the native engines run Journeys, present Experiences, handle purchases, and
 maintain Feature access. Dart gives you a small, typed interface and reactive state.
 
-**0.2 is a breaking redesign.** There are no compatibility aliases. This branch is a
-source preview pending native release qualification; do not install the old `0.1.0`
-artifacts for this interface. See [native setup](docs/native-setup.md) for building the
-example against the matching SDK sources.
-
 ## Your first integration
 
-Use Flutter 3.41+ / Dart 3.11+, iOS 15+, and Android API 23+. iOS uses Swift Package
-Manager. Android uses the native SDK's Gradle dependency. For this source preview, run `python3 scripts/prepare-native.py` and add a path dependency
-on `packages/nuxie_flutter` to your app. Follow the [native setup](docs/native-setup.md)
-for your host. The Bloc and Riverpod adapters are optional.
+Use Flutter 3.41+ / Dart 3.11+, iOS 15+, and Android API 23+. Install the SDK:
+
+```sh
+flutter pub add nuxie_flutter:^1.0.0
+```
+
+iOS uses Swift Package Manager. Android resolves Nuxie's native SDK from Maven
+Central. Follow [native setup](docs/native-setup.md) for your host. The Bloc and
+Riverpod adapters are optional.
 
 ```dart
 import 'package:flutter/widgets.dart';

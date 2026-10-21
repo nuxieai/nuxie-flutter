@@ -2,18 +2,18 @@
 
 Native Experiences, typed App Actions, and reactive Feature access for Flutter.
 
-This package contains the **breaking 0.2 source preview**. Start with the
-[full integration guide](../../README.md), including configuration, events,
-reactive access, billing ownership, and the iOS/Android SDK Lab.
+```sh
+flutter pub add nuxie_flutter:^1.0.0
+```
 
-- [Public API reference](../../docs/api-reference.md)
-- [Native dependencies and source setup](../../docs/native-setup.md)
-- [Run and validate the example](../../docs/testing.md)
-- [Release qualification](../../RELEASE_CHECKLIST.md)
+Use Flutter 3.41+ / Dart 3.11+, iOS 15+, and Android API 23+. Enable Swift Package
+Manager in your Flutter application's configuration for iOS.
 
+Start with the [integration guide](https://github.com/nuxieai/nuxie-flutter#your-first-integration).
 Use `Nuxie.instance` as your production client and depend on `NuxieClient` in
 application code. Native SDKs own Journeys, presentation, and billing. Optional
-Bloc and Riverpod adapters mirror the same immutable Feature snapshot.
+`nuxie_flutter_bloc` and `nuxie_flutter_riverpod` packages mirror the same Feature
+snapshot.
 
-This preview is not published. Metered usage and entity-scoped queries need the
-coordinated backend fix documented in the integration guide before release.
+- [API reference](https://github.com/nuxieai/nuxie-flutter/blob/main/docs/api-reference.md)
+- [Native setup](https://github.com/nuxieai/nuxie-flutter/blob/main/docs/native-setup.md)

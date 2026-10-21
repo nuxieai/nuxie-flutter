@@ -1,0 +1,9 @@
+dependency_overrides:
+  nuxie_flutter_platform_interface:
+    path: ../nuxie_flutter_platform_interface
+  nuxie_flutter_native:
+    path: ../nuxie_flutter_native
+  nuxie_flutter_bloc:
+    path: ../nuxie_flutter_bloc
+  nuxie_flutter_riverpod:
+    path: ../nuxie_flutter_riverpod

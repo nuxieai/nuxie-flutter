@@ -1,7 +1,7 @@
 {
-  "wrapper": "0.2.1",
+  "wrapper": "1.0.0",
   "contract": 2,
-  "distribution": "source-preview",
+  "distribution": "pub.dev",
   "pigeon": "26.3.4",
   "ios": {
     "repository": "https://github.com/nuxieai/nuxie-ios.git",

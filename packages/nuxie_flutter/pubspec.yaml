@@ -1,7 +1,7 @@
 name: nuxie_flutter
 description: Flutter SDK for Nuxie.
-version: 0.2.1
-publish_to: none
+version: 1.0.0
+repository: https://github.com/nuxieai/nuxie-flutter/tree/main/packages/nuxie_flutter
 
 environment:
   sdk: '>=3.11.0 <4.0.0'
@@ -10,10 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  nuxie_flutter_platform_interface:
-    path: ../nuxie_flutter_platform_interface
-  nuxie_flutter_native:
-    path: ../nuxie_flutter_native
+  nuxie_flutter_platform_interface: ^1.0.0
+  nuxie_flutter_native: ^1.0.0
 
 dev_dependencies:
   flutter_test:
