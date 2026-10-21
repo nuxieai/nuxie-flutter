@@ -139,6 +139,15 @@ maven.install(
         "androidx.sqlite:sqlite-framework:2.6.2",
         "androidx.browser:browser:1.8.0",
         "com.android.billingclient:billing:9.1.0",
+        "com.google.android.material:material:1.12.0",
+        # Match the native SDK's aligned Material/Lifecycle dependencies.
+        "androidx.lifecycle:lifecycle-common:2.6.2",
+        "androidx.lifecycle:lifecycle-livedata:2.6.2",
+        "androidx.lifecycle:lifecycle-livedata-core:2.6.2",
+        "androidx.lifecycle:lifecycle-process:2.6.2",
+        "androidx.lifecycle:lifecycle-runtime:2.6.2",
+        "androidx.lifecycle:lifecycle-viewmodel:2.6.2",
+        "androidx.lifecycle:lifecycle-viewmodel-savedstate:2.6.2",
         "org.jetbrains.kotlin:kotlin-stdlib:2.1.20",
         "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0",
         "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.9.0",
@@ -157,6 +166,7 @@ native.artifacts(
         "@flutter_maven//:androidx_browser_browser": "androidx.browser:browser:1.8.0",
         "@flutter_maven//:androidx_sqlite_sqlite_framework": "androidx.sqlite:sqlite-framework:2.6.2",
         "@flutter_maven//:com_android_billingclient_billing": "com.android.billingclient:billing:9.1.0",
+        "@flutter_maven//:com_google_android_material_material": "com.google.android.material:material:1.12.0",
         # The POM requests 2.0.21; sqlite resolves the shared runtime to 2.1.20.
         "@flutter_maven//:org_jetbrains_kotlin_kotlin_stdlib": "org.jetbrains.kotlin:kotlin-stdlib:2.0.21",
         "@flutter_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_android": "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0",
