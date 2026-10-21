@@ -15,33 +15,27 @@ ROOT = Path(__file__).resolve().parents[2]
 
 @unittest.skipUnless(os.environ.get("GRADLE_BIN"), "Set GRADLE_BIN to qualify the offline Maven consumer")
 class GradleNativeSdkTests(unittest.TestCase):
-    def test_kotlin_example_resolves_the_app_project_coordinate(self):
+    def test_kotlin_example_resolves_the_public_sdk_without_repo_helpers(self):
         with tempfile.TemporaryDirectory(prefix="flutter-kotlin-maven-consumer-") as directory:
             project = Path(directory).resolve()
-            aar, _, _ = self.product_fixture(project)
+            aar, _, _ = self.product_fixture(project, version="1.0.0")
             app = project / "packages/nuxie_flutter/example/android/app"
             app.mkdir(parents=True)
             (project / "settings.gradle.kts").write_text(
                 'rootProject.name = "native-kotlin-consumer"\n'
                 'include(":app")\nproject(":app").projectDir = file("packages/nuxie_flutter/example/android/app")\n'
             )
-            # A root property cannot stand in for the coordinate owned by the app.
-            (project / "build.gradle.kts").write_text(
-                'extra["nuxieAndroidCoordinate"] = "wrong:root-coordinate:0"\n'
-            )
             authored = (ROOT / "packages/nuxie_flutter/example/android/app/build.gradle.kts").read_text()
-            consumer = authored[authored.index('extra["nuxieFlutterRepoRoot"]'):]
+            consumer = authored[authored.index('\ndependencies {'):]
+            repository = (project / ".native/artifacts/android").as_uri()
             (app / "build.gradle.kts").write_text(
-                'plugins { java }\n' + consumer
+                'plugins { java }\nrepositories { maven { url = uri("' + repository + '") } }\n' + consumer
                 + '\nval nativeSdk = configurations.create("nativeSdk") {\n'
                 '    extendsFrom(configurations["implementation"])\n}\n'
                 'tasks.register("verifyProduct") { doLast {\n'
                 '    check(nativeSdk.singleFile.name == "' + aar.name + '")\n'
-                '    println("Resolved app project source-addressed AAR")\n}\n}\n'
+                '    println("Resolved public SDK AAR without repository helpers")\n}\n}\n'
             )
-            helper = project / "scripts/gradle/native-sdk.gradle"
-            helper.parent.mkdir(parents=True)
-            helper.write_bytes((ROOT / "scripts/gradle/native-sdk.gradle").read_bytes())
             environment = dict(os.environ)
             environment.pop("NUXIE_ANDROID_ARTIFACTS", None)
             result = subprocess.run(
@@ -49,11 +43,11 @@ class GradleNativeSdkTests(unittest.TestCase):
                 cwd=project, env=environment, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             )
             self.assertEqual(result.returncode, 0, result.stdout)
-            self.assertIn("Resolved app project source-addressed AAR", result.stdout)
+            self.assertIn("Resolved public SDK AAR without repository helpers", result.stdout)
 
-    def product_fixture(self, project):
+    def product_fixture(self, project, version=None):
         revision = "1" * 40
-        version = "0.2.0-" + revision
+        version = version or "0.2.0-" + revision
         (project / "NATIVE-PINS.json").write_text(json.dumps({"android": {"revision": revision}}))
         product = project / ".native/artifacts/android"
         artifacts = product / ("ai/nuxie/nuxie-android/" + version)

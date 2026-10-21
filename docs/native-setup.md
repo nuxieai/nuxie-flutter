@@ -1,10 +1,15 @@
 # Native setup
 
-This 0.2 source preview requires matching native source changes for coherent Feature snapshots and public restore results. Old 0.1 native artifacts are incompatible. Package publication is disabled until native dependency qualification is complete.
+Install `nuxie_flutter: ^1.0.0` from pub.dev. The native plugin resolves the
+released iOS SDK through SwiftPM and Android SDK 1.0.0 through Maven Central.
 
-## Acquire the pinned sources
+## Repository development
 
-From the Flutter repository root, run `python3 scripts/prepare-native.py`. This fetches and verifies both immutable revisions in `NATIVE-PINS.json`; it refuses to overwrite a modified checkout. Bazel prepares the native bridge products under `.native/artifacts`. The Android example consumes that source-addressed AAR and its dependency POM. iOS resolves the pinned Git revision through SwiftPM for its independent consumer check.
+`pubspec_overrides.yaml` files select sibling packages when working in this
+repository. They are excluded from published packages. Run
+`python3 scripts/prepare-native.py` for the pinned native bridge products used
+by Bazel checks. The example applications independently resolve the published
+native SDK dependencies.
 
 ## iOS
 
@@ -30,15 +35,13 @@ NUXIE_IOS_SDK_PATH=/absolute/path/nuxie-ios NUXIE_RUNTIME_USE_LOCAL=1 \
 
 Use API 23+ devices, compile SDK 36, Java 21 and the Android SDK. The example uses `FlutterFragmentActivity` so the native SDK can present Experiences. Set `ANDROID_HOME` if your SDK is not automatically discovered.
 
-For local native validation, prepare the pinned Bazel products before building the example:
+The plugin and example resolve `ai.nuxie:nuxie-android:1.0.0` from Maven Central.
+No repository checkout or native compilation is required by Flutter consumers.
 
 ```sh
-python3 scripts/prepare-native.py --platform android
 cd packages/nuxie_flutter/example
 flutter build apk --debug
 ```
-
-The source preview resolves `ai.nuxie:nuxie-android:0.2.0-<revision>` from the checkout's prepared Maven directory. `NUXIE_ANDROID_ARTIFACTS` can select an absolute product directory or its `sdk-artifacts.json`; the receipt must match `NATIVE-PINS.json`. The AAR contains the Bazel-built SDK and native runtime, and its POM supplies the transitive dependencies. Registry publication requires a qualified native artifact.
 
 ## Local backend validation
 

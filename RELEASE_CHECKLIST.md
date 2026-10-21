@@ -1,6 +1,6 @@
 # Release qualification
 
-This branch is a source preview. `publish_to: none` remains intentional.
+Publish packages in dependency order: platform interface, native plugin, core SDK, then Bloc and Riverpod adapters. Run `dart pub publish --dry-run` in each package before publishing.
 
 - Run `python3 scripts/check.py` on macOS: it verifies native pins and fixtures, checks every Dart package, verifies Pigeon regeneration, and builds both native examples.
 - Run the real-device integration test with development app keys and a published Journey. Record backend, simulator/emulator versions, native commits, and exact results separately from mocked-channel coverage.
@@ -9,6 +9,6 @@ This branch is a source preview. `publish_to: none` remains intentional.
 - Review exported API docs and package README. Remove source-preview installation directions only when registry installation is proven.
 - Open the native and wrapper PRs in their owning repositories. Record parent pointer updates separately.
 
-- [ ] Resolve [UNIV-3135](https://universe.basis.dev/issue/UNIV-3135) and run strict
-  device usage validation against real grants, including the final unit. Current
-  local ingest rejects native usage and entity-scoped requests.
+Metered usage and scoped-query integration was resolved and qualified in
+[UNIV-3135](https://universe.basis.dev/issue/UNIV-3135). Keep the recorded device
+and store evidence distinct from package-installation checks.

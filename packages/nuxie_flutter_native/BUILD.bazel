@@ -9,6 +9,7 @@ flutter_library(
     pub_deps = "pub_deps.json",
     deps = [
         "@flutter_sdk//flutter/packages/flutter",
+        "@pub_meta//:meta",
         "//packages/nuxie_flutter_platform_interface:package",
         "@flutter_sdk//flutter/packages/flutter_test",
         "@pub_flutter_lints//:flutter_lints",
@@ -26,6 +27,7 @@ flutter_library(
     pubspec = "pubspec.yaml",
     deps = [
         "@flutter_sdk//flutter/packages/flutter",
+        "@pub_meta//:meta",
         "//packages/nuxie_flutter_platform_interface:package",
         "@flutter_sdk//flutter/packages/flutter_test",
         "@pub_flutter_lints//:flutter_lints",
