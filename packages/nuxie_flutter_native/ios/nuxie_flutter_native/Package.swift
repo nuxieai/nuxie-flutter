@@ -4,7 +4,7 @@ import Foundation
 
 let nativeDependency: Package.Dependency = ProcessInfo.processInfo.environment["NUXIE_IOS_SDK_PATH"].map {
   .package(name: "nuxie-ios", path: $0)
-} ?? .package(url: "https://github.com/nuxieai/nuxie-ios.git", revision: "6b13a84a06f6788cdfb3c8891fb2c6425095db31")
+} ?? .package(url: "https://github.com/nuxieai/nuxie-ios.git", revision: "5d2f592bf6a3f29a7cdd406ab5c7fd77e2fe9773")
 
 let package = Package(
   name: "nuxie_flutter_native",
