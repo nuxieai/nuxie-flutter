@@ -19,3 +19,7 @@ pubspec.lock
 __pycache__/
 /output/
 __pycache__/
+
+# Pool evidence belongs to this checkout, never to SDK source.
+/.nuxie/
+/scripts/__pycache__/
