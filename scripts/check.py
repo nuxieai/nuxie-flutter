@@ -77,7 +77,8 @@ def check(selected='all'):
         workers = env.get('NUXIE_BAZEL_CPU', '2')
         if not re.fullmatch(r'[1-9][0-9]*', workers):
             raise ValueError('iOS workers must be a positive integer')
-        run(['xcodebuild', '-jobs', workers, '-workspace', 'Runner.xcworkspace', '-scheme', 'Runner',
+        isolated = ['-derivedDataPath', str(ROOT / '.nuxie/ios-derived-data')] if os.environ.get('_NUXIE_SDK_SNAPSHOT') == '1' else []
+        run(['xcodebuild', *isolated, '-jobs', workers, '-workspace', 'Runner.xcworkspace', '-scheme', 'Runner',
              '-configuration', 'Debug', '-sdk', 'iphonesimulator', '-destination', 'generic/platform=iOS Simulator',
              'ARCHS=' + simulator_arch, 'CODE_SIGNING_ALLOWED=NO', 'build'], example / 'ios', env)
     if android:
