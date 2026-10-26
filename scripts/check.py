@@ -21,7 +21,7 @@ def run(args, cwd=ROOT, env=None):
 
 def pool_cli():
     """Use the declared Flutter version in a writable, request-owned SDK copy."""
-    if os.environ.get('_NUXIE_POOL_NESTED') != '1': return
+    if os.environ.get('_NUXIE_SDK_SNAPSHOT') != '1': return
     launcher = str(ROOT / 'scripts/bazel/bazel.sh')
     execution = Path(subprocess.check_output([launcher, 'info', 'execution_root'], cwd=ROOT, text=True).strip())
     files = subprocess.check_output([launcher, 'cquery', '@flutter_sdk//:flutter', '--output=files'], cwd=ROOT, text=True).splitlines()
