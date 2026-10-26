@@ -19,6 +19,7 @@ class ReadinessTests(unittest.TestCase):
         self.root = Path(temporary.name).resolve()
         (self.root / 'scripts/bazel').mkdir(parents=True)
         shutil.copy2(ROOT / 'scripts/check.py', self.root / 'scripts/check.py')
+        shutil.copy2(ROOT / 'scripts/pool.py', self.root / 'scripts/pool.py')
         fixtures = self.root / 'packages/nuxie_flutter_native/test/fixtures'
         fixtures.mkdir(parents=True)
         data = b'original cross-SDK contract fixture'
@@ -47,7 +48,7 @@ if name == 'flutter' and sys.argv[1:] == ['--version', '--machine']:
         (wrapper / 'gradle/wrapper').mkdir(parents=True)
         for name in ['gradlew', 'gradlew.bat', 'gradle/wrapper/gradle-wrapper.jar']:
             (wrapper / name).write_text(script)
-        self.environment = dict(os.environ, NUXIE_CI_RUNNER_POLICY_VERSION='1', PATH=str(self.bin) + os.pathsep + os.environ['PATH'], COMMAND_LOG=str(self.log), FAKE_FLUTTER_ROOT=str(self.root / 'flutter'))
+        self.environment = dict(os.environ, _NUXIE_POOL_NESTED='1', _NUXIE_SDK_SNAPSHOT='0', NUXIE_CI_RUNNER_POLICY_VERSION='1', PATH=str(self.bin) + os.pathsep + os.environ['PATH'], COMMAND_LOG=str(self.log), FAKE_FLUTTER_ROOT=str(self.root / 'flutter'))
 
     def check(self, selected=None):
         argv = [sys.executable, '-B', str(self.root / 'scripts/check.py')]
