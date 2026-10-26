@@ -19,6 +19,25 @@ def run(args, cwd=ROOT, env=None):
     subprocess.run(args, cwd=cwd, env=env, check=True)
 
 
+def pool_cli():
+    """Use the declared Flutter version in a writable, request-owned SDK copy."""
+    if os.environ.get('_NUXIE_POOL_NESTED') != '1': return
+    launcher = str(ROOT / 'scripts/bazel/bazel.sh')
+    execution = Path(subprocess.check_output([launcher, 'info', 'execution_root'], cwd=ROOT, text=True).strip())
+    files = subprocess.check_output([launcher, 'cquery', '@flutter_sdk//:flutter', '--output=files'], cwd=ROOT, text=True).splitlines()
+    if len(files) != 1: raise ValueError('Expected the declared host Flutter launcher')
+    binary = Path(files[0])
+    if not binary.is_absolute(): binary = execution / binary
+    sdk = binary.resolve(strict=True).parents[1]
+    destination = ROOT / '.nuxie/flutter-cli'
+    shutil.copytree(sdk, destination, symlinks=True)
+    for path in [destination, *destination.rglob('*')]:
+        if not path.is_symlink(): path.chmod(path.stat().st_mode | 0o200)
+    os.environ['PATH'] = str(destination / 'bin') + os.pathsep + os.environ['PATH']
+    os.environ['CI'] = 'true'
+    os.environ['FLUTTER_SUPPRESS_ANALYTICS'] = 'true'
+
+
 def check(selected='all'):
     if selected not in ('portable', 'android', 'ios', 'all'):
         raise ValueError('Select portable, android, ios or all')
@@ -33,6 +52,7 @@ def check(selected='all'):
         if hashlib.sha256((fixtures / entry['file']).read_bytes()).hexdigest() != entry['sha256']:
             raise ValueError('Fixture hash mismatch: ' + entry['file'])
     run([sys.executable, 'scripts/bazel/sdk.py', 'check'])
+    pool_cli()
     native = ROOT / 'packages/nuxie_flutter_native'
     run(['flutter', 'pub', 'get'], native)
     run(['dart', 'run', 'pigeon', '--input', 'pigeons/nuxie_bridge.dart'], native)
@@ -76,7 +96,11 @@ def check(selected='all'):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--platform', choices=['portable', 'android', 'ios', 'all'], default='all')
-    check(parser.parse_args().platform)
+    selected = parser.parse_args().platform
+    from pool import dispatch
+    status = dispatch('check', ['--platform', selected])
+    if status is not None: raise SystemExit(status)
+    check(selected)
 
 
 if __name__ == '__main__':
