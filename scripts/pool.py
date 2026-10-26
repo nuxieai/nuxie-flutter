@@ -8,7 +8,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parent.parent
 SDK = 'flutter'
-OUTPUTS = ['.native/artifacts', '.native/licenses', 'packages/nuxie_flutter/example/build']
+OUTPUTS = ['.native/artifacts', '.native/licenses', 'packages/nuxie_flutter/example/build/app/outputs', '.nuxie/ios-derived-data/Build/Products/Debug-iphonesimulator/Runner.app']
 
 
 def selection(mode, arguments, command=None):
