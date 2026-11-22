@@ -38,28 +38,30 @@ def pool_cli():
     os.environ['FLUTTER_SUPPRESS_ANALYTICS'] = 'true'
 
 
-def check(selected='all'):
+def check(selected='all', phase=False):
     if selected not in ('portable', 'android', 'ios', 'all'):
         raise ValueError('Select portable, android, ios or all')
     ios = selected in ('ios', 'all')
     android = selected in ('android', 'all')
     if ios and sys.platform != 'darwin':
         raise ValueError('iOS Flutter readiness requires macOS for the simulator build')
-    # These portable checks remain in full readiness and every platform lane.
-    # They validate fixture provenance, Dart contracts and generated interfaces.
-    fixtures = ROOT / 'packages/nuxie_flutter_native/test/fixtures'
-    for entry in json.loads((fixtures / 'PROVENANCE.json').read_text())['files']:
-        if hashlib.sha256((fixtures / entry['file']).read_bytes()).hexdigest() != entry['sha256']:
-            raise ValueError('Fixture hash mismatch: ' + entry['file'])
-    run([sys.executable, 'scripts/bazel/sdk.py', 'check'])
     pool_cli()
+    if not phase or selected == 'portable':
+        # Public platform checks include the portable contracts. Full pool
+        # readiness schedules these contracts once in its portable phase.
+        fixtures = ROOT / 'packages/nuxie_flutter_native/test/fixtures'
+        for entry in json.loads((fixtures / 'PROVENANCE.json').read_text())['files']:
+            if hashlib.sha256((fixtures / entry['file']).read_bytes()).hexdigest() != entry['sha256']:
+                raise ValueError('Fixture hash mismatch: ' + entry['file'])
+        run([sys.executable, 'scripts/bazel/sdk.py', 'check'])
     native = ROOT / 'packages/nuxie_flutter_native'
     run(['flutter', 'pub', 'get'], native)
-    run(['dart', 'run', 'pigeon', '--input', 'pigeons/nuxie_bridge.dart'], native)
-    run(['git', 'diff', '--exit-code', '--',
-         'packages/nuxie_flutter_native/lib/src/generated',
-         'packages/nuxie_flutter_native/android/src/main/kotlin/io/nuxie/flutter/nativeplugin/NuxieBridge.g.kt',
-         'packages/nuxie_flutter_native/ios/nuxie_flutter_native/Sources/nuxie_flutter_native/NuxieBridge.g.swift'])
+    if not phase or selected == 'portable':
+        run(['dart', 'run', 'pigeon', '--input', 'pigeons/nuxie_bridge.dart'], native)
+        run(['git', 'diff', '--exit-code', '--',
+             'packages/nuxie_flutter_native/lib/src/generated',
+             'packages/nuxie_flutter_native/android/src/main/kotlin/io/nuxie/flutter/nativeplugin/NuxieBridge.g.kt',
+             'packages/nuxie_flutter_native/ios/nuxie_flutter_native/Sources/nuxie_flutter_native/NuxieBridge.g.swift'])
     if selected == 'portable':
         return
     # build-native owns one preparation of exactly the selected platforms.
@@ -96,12 +98,14 @@ def check(selected='all'):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--phase', choices=['portable', 'android', 'ios'])
     parser.add_argument('--platform', choices=['portable', 'android', 'ios', 'all'], default='all')
-    selected = parser.parse_args().platform
+    args = parser.parse_args()
+    selected = args.phase or args.platform
     from pool import dispatch
-    status = dispatch('check', ['--platform', selected])
+    status = dispatch('check', ['--phase' if args.phase else '--platform', selected])
     if status is not None: raise SystemExit(status)
-    check(selected)
+    check(selected, phase=args.phase is not None)
 
 
 if __name__ == '__main__':
